@@ -2,13 +2,14 @@ import { useState } from "react"
 import { motion } from "motion/react"
 import {
   FiUser, FiMail, FiPhone, FiMapPin, FiEdit3, FiSave, FiX,
-  FiSettings, FiLogOut, FiPackage,
+  FiSettings, FiLogOut, FiPackage, FiHeart,
 } from "react-icons/fi"
 import { Link, useNavigate } from "react-router-dom"
-import { useMarketplaceStore } from "../../lib/marketplaceStore"
+import { useAuthStore } from "../../store/authStore"
+import { useCartStore } from "../../store/cartStore"
 import { useApiQuery, useApiMutation } from "../../api/adapter"
 import Button from "../../utilities/Button.jsx"
-import Card from "../../components/cartModal/CartModal.jsx"
+import Card from "../../utilities/Card.jsx"
 import ProfileInput from "../../utilities/ProfileInput.jsx"
 import ProfileSkeleton from "../../components/loaders/ProfileSkeleton.jsx"
 
@@ -29,11 +30,12 @@ const Badge = ({ children, variant = "default", className = "" }) => {
 
 export default function ProfilePage() {
   const navigate = useNavigate();
-  const logout = useMarketplaceStore((s) => s.logout);
-  const clearCart = useMarketplaceStore((s) => s.clearCart);
-  const isAuthenticated = useMarketplaceStore((s) => s.isAuthenticated);
+  const logout = useAuthStore((s) => s.logout);
+  const clearCart = useCartStore((s) => s.clearCart);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const setUser = useAuthStore((s) => s.setUser);
 
-  const { data: user, isLoading, isError } = useApiQuery("/auth/profile", null, {
+  const { data: user, isLoading, isError, refetch } = useApiQuery("/auth/profile", null, {
     enabled: isAuthenticated,
   });
 
@@ -43,7 +45,7 @@ export default function ProfilePage() {
 
   const [formData, setFormData] = useState({
     email: "", fullName: "", bio: "",
-    address: { city: "", street: "", state: "", country: "" },
+    address: { city: "", street: "", state: "", zip: "", country: "" },
     contact: ""
   });
 
@@ -53,7 +55,7 @@ export default function ProfilePage() {
       email: user.email || "",
       fullName: user.fullName || "",
       bio: user.bio || "",
-      address: user.address || { city: "", street: "", state: "", country: "" },
+      address: user.address || { city: "", street: "", state: "", zip: "", country: "" },
       contact: user.contact || ""
     });
     setInitialized(true);
@@ -79,8 +81,13 @@ export default function ProfilePage() {
   };
 
   const handleSave = () => {
-    updateProfile(formData);
-    setIsEditing(false);
+    updateProfile(formData, {
+      onSuccess: (res) => {
+        if (res?.profile) setUser(res.profile)
+        setIsEditing(false)
+        refetch()
+      },
+    });
   }
 
   const handleCancel = () => {
@@ -89,7 +96,7 @@ export default function ProfilePage() {
         email: user.email || "",
         fullName: user.fullName || "",
         bio: user.bio || "",
-        address: user.address || { city: "", street: "", country: "", state: "" },
+        address: user.address || { city: "", street: "", country: "", state: "", zip: "" },
         contact: user.contact || ""
       });
     }
@@ -117,46 +124,55 @@ export default function ProfilePage() {
         </motion.div>
 
         <div className="grid lg:grid-cols-4 gap-8">
+          {/* Sidebar */}
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.1 }} className="lg:col-span-1">
             <Card className="p-6">
               <div className="text-center mb-6">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center mx-auto mb-3">
+                  <FiUser className="w-8 h-8 text-white" />
+                </div>
                 <h2 className="text-xl font-bold text-gray-900">{formData.fullName || user?.fullName}</h2>
-                <p className="text-gray-600">Member since 2024</p>
+                <p className="text-gray-500 text-sm">Member since {new Date(user?.createdAt || Date.now()).getFullYear()}</p>
               </div>
-              <section>
+              <nav className="space-y-1">
                 <Link to="/profile" className="flex items-center px-4 py-3 text-red-600 bg-red-50 rounded-lg font-medium">
                   <FiUser className="mr-3" /> Profile Information
                 </Link>
                 <Link to="/orders-tracking" className="flex items-center px-4 py-3 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors">
                   <FiPackage className="mr-3" /> Order History
                 </Link>
-                <p className="flex items-center px-4 py-3 text-gray-400 rounded-lg transition-colors">
+                <Link to="/wishlist" className="flex items-center px-4 py-3 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors">
+                  <FiHeart className="mr-3" /> Wishlist
+                </Link>
+                <p className="flex items-center px-4 py-3 text-gray-400 rounded-lg transition-colors cursor-not-allowed">
                   <FiSettings className="mr-3 mt-[2px] text-gray-400" /> Settings
                 </p>
                 <button onClick={handleLogout} className="flex items-center w-full px-4 py-3 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
                   <FiLogOut className="mr-3" /> Sign Out
                 </button>
-              </section>
+              </nav>
             </Card>
+
             <Card className="p-6 mt-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Account Stats</h3>
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Account</h3>
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Total Orders</span>
-                  <span className="font-bold text-gray-900">15</span>
+                  <span className="text-gray-600">Status</span>
+                  <Badge variant="info">Customer</Badge>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Total Spent</span>
-                  <span className="font-bold text-green-600"><span className="text-[11px]">Rs.</span> 145,250</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Member Status</span>
-                  <Badge variant="success">Premium</Badge>
+                  <span className="text-gray-600">Role{user?.role?.length > 1 ? "s" : ""}</span>
+                  <div className="flex gap-1">
+                    {user?.role?.map((r) => (
+                      <Badge key={r} variant="default">{r}</Badge>
+                    ))}
+                  </div>
                 </div>
               </div>
             </Card>
           </motion.div>
 
+          {/* Main */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }} className="lg:col-span-3">
             <Card className="p-8">
               <div className="flex md:flex-row flex-col gap-y-2 md:items-center justify-between mb-8">
@@ -182,6 +198,7 @@ export default function ProfilePage() {
                       <ProfileInput label="Full Name" value={formData.fullName} onChange={(e) => handleInputChange("fullName", e.target.value)} disabled={!isEditing} className={!isEditing ? "bg-gray-50" : ""} />
                       <ProfileInput label="Email Address" type="email" value={formData.email} onChange={(e) => handleInputChange("email", e.target.value)} disabled={!isEditing} className={!isEditing ? "bg-gray-50" : ""} />
                       <ProfileInput label="Phone Number" type="tel" value={formData.contact} onChange={(e) => handleInputChange("contact", e.target.value)} disabled={!isEditing} className={!isEditing ? "bg-gray-50" : ""} />
+                      <ProfileInput label="Bio" value={formData.bio} onChange={(e) => handleInputChange("bio", e.target.value)} disabled={!isEditing} className={!isEditing ? "bg-gray-50" : ""} />
                     </div>
                   </div>
                 </div>
@@ -196,7 +213,10 @@ export default function ProfilePage() {
                         <ProfileInput label="City" value={formData.address.city} onChange={(e) => handleAddressInputChange("city", e.target.value, "address")} disabled={!isEditing} className={!isEditing ? "bg-gray-50" : ""} />
                         <ProfileInput label="State" value={formData.address.state} onChange={(e) => handleAddressInputChange("state", e.target.value, "address")} disabled={!isEditing} className={!isEditing ? "bg-gray-50" : ""} />
                       </div>
-                      <ProfileInput label="Country" value={formData.address.country} onChange={(e) => handleAddressInputChange("country", e.target.value, "address")} disabled={!isEditing} className={!isEditing ? "bg-gray-50" : ""} />
+                      <div className="grid grid-cols-2 gap-4">
+                        <ProfileInput label="Zip Code" value={formData.address.zip} onChange={(e) => handleAddressInputChange("zip", e.target.value, "address")} disabled={!isEditing} className={!isEditing ? "bg-gray-50" : ""} />
+                        <ProfileInput label="Country" value={formData.address.country} onChange={(e) => handleAddressInputChange("country", e.target.value, "address")} disabled={!isEditing} className={!isEditing ? "bg-gray-50" : ""} />
+                      </div>
                     </div>
                   </div>
                 </div>

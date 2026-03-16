@@ -1,12 +1,22 @@
 import axios from "axios";
-import { useMarketplaceStore } from "../lib/marketplaceStore";
+import { useAuthStore } from "../store/authStore";
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
+
+function getToken() {
+  const token = useAuthStore.getState().token;
+  if (token) return token;
+  try {
+    const stored = JSON.parse(localStorage.getItem("diobral-auth-storage") || "{}");
+    return stored.state?.token || null
+  } catch { return null }
+}
 
 const api = axios.create({ baseURL: API_BASE_URL });
 
 api.interceptors.request.use((config) => {
-  const token = useMarketplaceStore.getState().token;
+  const token = getToken();
+  console.log("🔑 interceptor: url=" + config.url + " hasToken=" + !!token)
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
@@ -15,7 +25,7 @@ api.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401) {
-      useMarketplaceStore.getState().logout();
+      useAuthStore.getState().logout();
     }
     return Promise.reject(err);
   }

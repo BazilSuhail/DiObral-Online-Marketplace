@@ -14,16 +14,22 @@ import {
 } from 'react-icons/md';
 import { BiLogInCircle } from "react-icons/bi";
 import { FiHome, FiInfo, FiList } from "react-icons/fi";
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import SearchModal from "../searchModal/SearchModal"
 import { Link, NavLink } from "react-router-dom"
-import { useMarketplaceStore } from "../../lib/marketplaceStore"
+import { useAuthStore } from "../../store/authStore"
+import { useCartStore } from "../../store/cartStore"
 import CartModal from "../cartModal/CartModal";
 
 export default function Navbar() {
-  const cart = useMarketplaceStore((s) => s.cart);
-  const isAuthenticated = useMarketplaceStore((s) => s.isAuthenticated);
+  const cart = useCartStore((s) => s.cart);
+  const fetchCart = useCartStore((s) => s.fetchCart);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (isAuthenticated) fetchCart()
+  }, [isAuthenticated, fetchCart])
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [hoveredCategory, setHoveredCategory] = useState(false)
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false)
@@ -63,7 +69,7 @@ export default function Navbar() {
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className="md:block hidden bg-gray-100 shadow-sm border-b border-gray-50 sticky top-0 z-30"
+        className="md:block hidden sticky top-0 z-30"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 md:h-20">
@@ -307,7 +313,7 @@ export default function Navbar() {
                 animate={{ scaleX: 1, height: "390px", transition: { duration: 0.5 } }}
                 exit={{ scaleX: 0, height: 0, transition: { duration: 0.3, delay: 0.1 } }}
                 style={{ transformOrigin: "right" }}
-                className="top-[25px] left-[15px] right-[15px] fixed z-[999] mt-[65px] overflow-hidden pb[45px] inset-0 bg-white border-[2px] border-gray-200 shadow-2xl flex rounded-[10px] flex-col h-screen px-4 py-3"
+                className="top-[25px] left-[15px] right-[15px] fixed z-[999] mt-[65px] overflow-hidden pb[45px] inset-0 bg-white border-[2px] border-gray-200 shadow-xl flex rounded-[10px] flex-col h-screen px-4 py-3"
               >
                 <div className="my-[10px]"></div>
                 <motion.div

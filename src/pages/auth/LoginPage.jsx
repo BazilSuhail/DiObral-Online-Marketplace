@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "motion/react";
-import { useMarketplaceStore } from "../../lib/marketplaceStore";
+import { useAuthStore } from "../../store/authStore";
 import { post } from "../../api/client";
 import {
   FiMail, FiLock, FiEye, FiEyeOff, FiArrowRight,
@@ -47,7 +47,7 @@ const categories = [
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const login = useMarketplaceStore((s) => s.login);
+  const login = useAuthStore((s) => s.login);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);

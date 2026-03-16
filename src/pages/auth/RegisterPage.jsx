@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
-import { useMarketplaceStore } from "../../lib/marketplaceStore";
+import { useAuthStore } from "../../store/authStore";
 import { post } from "../../api/client";
 import {
   FiMail, FiLock, FiUser, FiPhone, FiMapPin,
@@ -52,7 +52,7 @@ const perks = [
 
 export default function RegisterPage() {
   const navigate = useNavigate();
-  const login = useMarketplaceStore((s) => s.login);
+  const login = useAuthStore((s) => s.login);
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(1);
   const [form, setForm] = useState({

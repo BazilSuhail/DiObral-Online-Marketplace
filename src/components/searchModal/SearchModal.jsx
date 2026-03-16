@@ -10,9 +10,9 @@ export default function SearchModal({ isOpen, onClose }) {
   const searchInputRef = useRef(null)
   const navigate = useNavigate()
 
-  const { data: products } = useApiQuery("/fetchproducts/products");
+  const { data: products } = useApiQuery("/api/products");
 
-  const suggestions = (products || [])
+  const suggestions = (products?.products || [])
     .filter(p => searchQuery && p.name?.toLowerCase().includes(searchQuery.toLowerCase()))
     .slice(0, 5);
 

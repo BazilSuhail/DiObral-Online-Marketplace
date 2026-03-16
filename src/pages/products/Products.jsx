@@ -117,7 +117,7 @@ export default function Products() {
   const sortReverse = Object.fromEntries(Object.entries(sortMap).map(([k, v]) => [v, k]));
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-12">
         <div className="mb-8">
           <h1 className="text-[22px] lg:text-[30px] font-bold text-gray-900">All <span className="text-red-700">Products</span></h1>

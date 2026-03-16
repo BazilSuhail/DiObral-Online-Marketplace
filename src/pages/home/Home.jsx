@@ -59,7 +59,7 @@ const ServiceCard = ({ icon: Icon, title, description, delay = 0 }) => {
 
 const Home = () => {
   const navigate = useNavigate();
-  const { data: products, isLoading, error } = useApiQuery("/homeproducts");
+  const { data: products, isLoading, error } = useApiQuery("/api/home");
 
   return (
     <main className="font-sans bg-gray-100 min-h-screen text-gray-800">
@@ -139,7 +139,7 @@ const Home = () => {
           ) : (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                {(products || []).map((product, index) => {
+                {(products?.latest || []).map((product, index) => {
                   const discountedPrice = product.sale
                     ? (product.price - (product.price * product.sale) / 100).toFixed(2)
                     : product.price.toFixed(2);

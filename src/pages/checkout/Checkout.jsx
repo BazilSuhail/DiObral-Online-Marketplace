@@ -1,270 +1,276 @@
-import { useEffect, useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useMarketplaceStore } from '../../lib/marketplaceStore';
-import { post, apiCall } from '../../api/client';
-import { useQueries } from '@tanstack/react-query';
+import { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { useAuthStore } from "../../store/authStore"
+import { useCartStore } from "../../store/cartStore"
+import { post, apiCall } from "../../api/client"
 import { motion } from "motion/react"
-import { Link } from 'react-router-dom';
-import { FaTimes } from 'react-icons/fa';
-import { FiCheck, FiMapPin, FiUser, FiShoppingBag, FiArrowRight } from 'react-icons/fi';
-import Button from '../../utilities/Button.jsx';
-import ProfileInput from '../../utilities/ProfileInput.jsx';
+import { Link } from "react-router-dom"
+import {
+  FiCheck, FiMapPin, FiUser, FiShoppingBag, FiArrowRight,
+  FiTag, FiMessageSquare, FiPhone, FiHome, FiGlobe,
+  FiLoader,
+} from "react-icons/fi"
+import Button from "../../utilities/Button"
 
-const CartItem = ({ id, size, quantity, index, product }) => {
-  if (!product) return null;
-
-  const discountedPrice = product.sale
-    ? product.price - (product.price * product.sale) / 100
-    : product.price;
-  const isDiscounted = product.sale && discountedPrice < product.price;
+const CartItem = ({ item, index }) => {
+  const product = item.product
+  if (!product) return null
+  const price = item.price
+  const originalPrice = product.price
+  const isDiscounted = price < originalPrice
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: index * 0.1 }}
-      className="bg-white border border-gray-200 rounded-lg p-3 md:p-6"
+      transition={{ delay: index * 0.05 }}
+      className="flex items-center gap-3 py-3 border-b border-gray-100 last:border-0"
     >
-      <div className="flex gap-4">
-        <img
-          src={`${import.meta.env.VITE_API_BASE_URL}/uploads/${product.image}`}
-          alt={product.name}
-          className="rounded-lg border-[2px] border-gray-200 w-[110px] h-[120px] object-cover"
-        />
-        <div className="flex-1">
-          <h3 className="font-semibold mb-3 mt-1 text-gray-900">{product.name}</h3>
-          <div className="text-[12px] md:text-sm text-gray-600 mb-4">
-            <p>Qty: {quantity}</p>
-            <p>Size: {size}</p>
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="flex md:flex-row flex-col items-center">
-              <div className="font-semibold text-[12px] md:text-[16px] text-gray-900">
-                <span className="text-[10px] md:text-[13px] font-[600] text-gray-700">Rs. </span>
-                {discountedPrice.toFixed(2)}
-              </div>
-              {isDiscounted && (
-                <div className="text-[10px] ml-[8px] text-center md:text-[13px] text-gray-500 line-through">Rs. {product.price.toFixed(2)}</div>
-              )}
-            </div>
-            <div className="font-semibold text-gray-900">
-              <span className="text-[13px] font-[600] text-gray-500">Total Price: </span>
-              {(discountedPrice * quantity).toFixed(2)}
-            </div>
-          </div>
-        </div>
+      <img
+        src={`${import.meta.env.VITE_API_BASE_URL}/uploads/${product.image}`}
+        alt={product.name}
+        className="rounded-lg border border-gray-200 w-14 h-14 object-cover flex-shrink-0"
+      />
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium text-gray-900 truncate">{product.name}</p>
+        <p className="text-xs text-gray-400">Size: {item.size} &middot; Qty: {item.quantity}</p>
+      </div>
+      <div className="text-right flex-shrink-0">
+        <p className="text-sm font-semibold text-gray-900">Rs. {price.toFixed(2)}</p>
+        {isDiscounted && <p className="text-[10px] text-gray-400 line-through">Rs. {originalPrice.toFixed(2)}</p>}
       </div>
     </motion.div>
-  );
-};
+  )
+}
 
-const Checkout = () => {
-  const cart = useMarketplaceStore((s) => s.cart);
-  const clearCart = useMarketplaceStore((s) => s.clearCart);
-  const navigate = useNavigate();
+export default function Checkout() {
+  const cart = useCartStore((s) => s.cart)
+  const clearCart = useCartStore((s) => s.clearCart)
+  const navigate = useNavigate()
 
-  const [formData, setFormData] = useState({
-    email: '', fullName: '', bio: '',
-    address: { city: '', street: '', country: '' },
-    contact: ''
-  });
+  const [form, setForm] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    street: "",
+    city: "",
+    state: "",
+    country: "",
+    notes: "",
+    couponCode: "",
+  })
+  const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const token = localStorage.getItem('token');
-        if (!token) { navigate('/signin'); return; }
-        const response = await apiCall('/auth/profile', 'GET');
-        setFormData({
-          email: response.email || '',
-          fullName: response.fullName || '',
-          bio: response.bio || '',
-          address: response.address || { city: '', street: '', country: '' },
-          contact: response.contact || ''
-        });
+        const token = useAuthStore.getState().token
+        if (!token) { navigate("/signin"); return }
+        const res = await apiCall("/auth/profile", "GET")
+        setForm((f) => ({
+          ...f,
+          fullName: res.fullName || "",
+          email: res.email || "",
+          phone: res.contact || "",
+          street: res.address?.street || "",
+          city: res.address?.city || "",
+          state: res.address?.state || "",
+          country: res.address?.country || "",
+        }))
       } catch {
-        navigate('/signin');
+        navigate("/signin")
       }
-    };
-    fetchProfile();
-  }, []);
-
-  const productQueries = useQueries({
-    queries: cart.map(item => ({
-      queryKey: [`/fetchproducts/products/${item.id}`],
-      queryFn: () => apiCall(`/fetchproducts/products/${item.id}`, "GET"),
-      staleTime: 1000 * 60 * 5,
-    }))
-  });
-
-  const productMap = useMemo(() => {
-    const map = {};
-    cart.forEach((item, i) => { map[item.id] = productQueries[i]?.data || null; });
-    return map;
-  }, [cart, productQueries]);
-
-  const calculateTotalBill = () => {
-    return cart.reduce((total, item) => {
-      const p = productMap[item.id];
-      if (p) {
-        const dp = p.sale ? p.price - (p.price * p.sale) / 100 : p.price;
-        return total + dp * item.quantity;
-      }
-      return total;
-    }, 0).toFixed(2);
-  };
-
-  const calculateActualTotalBill = () => {
-    return cart.reduce((total, item) => {
-      const p = productMap[item.id];
-      return total + (p ? p.price * item.quantity : 0);
-    }, 0).toFixed(2);
-  };
-
-  const handleConfirmOrder = async () => {
-    const token = localStorage.getItem('token');
-    if (!token) { alert('User not logged in'); return; }
-
-    const userId = (() => {
-      try { return JSON.parse(atob(token.split('.')[1])).id; } catch { return null; }
-    })();
-
-    const order = {
-      items: cart.map(item => {
-        const p = productMap[item.id];
-        const dp = p?.sale ? p.price - (p.price * p.sale) / 100 : p?.price || 0;
-        return {
-          name: p?.name || 'Unknown',
-          image: p?.image || '',
-          price: p?.price || 0,
-          size: item.size || 'No size',
-          discountedPrice: dp,
-          quantity: item.quantity
-        };
-      }),
-      orderDate: new Date().toISOString(),
-      total: calculateTotalBill()
-    };
-
-    try {
-      await post(`/place-order/orders/${userId}`, order);
-      alert('Order confirmed!');
-      clearCart();
-      await post('/cartState/cart/save', { userId, items: [] });
-      navigate('/orders-tracking');
-    } catch {
-      alert('Failed to confirm order.');
     }
-  };
+    fetchProfile()
+  }, [navigate])
 
-  if (!cart.length) return (
-    <main className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-5">
-          <h1 className="text-[25px] font-bold text-gray-900">Checkout Invoice</h1>
-          <p className="text-gray-600">Review your items and proceed to checkout</p>
-        </div>
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center py-16">
+  const set = (key, val) => setForm((f) => ({ ...f, [key]: val }))
+
+  const subtotal = cart.reduce((t, i) => t + (i.product?.price || 0) * i.quantity, 0)
+  const discount = subtotal - cart.reduce((t, i) => t + (i.price || 0) * i.quantity, 0)
+  const shipping = 200
+  const total = subtotal - discount + shipping
+
+  const handlePlaceOrder = async () => {
+    if (!form.street || !form.city || !form.state || !form.country || !form.phone) {
+      alert("Please fill in all required shipping fields")
+      return
+    }
+    setSubmitting(true)
+    try {
+      const res = await post("/checkout", {
+        shippingAddress: {
+          street: form.street,
+          city: form.city,
+          state: form.state,
+          country: form.country,
+        },
+        contactPhone: form.phone,
+        notes: form.notes || undefined,
+        couponCode: form.couponCode || undefined,
+      })
+      alert(res.message || "Order placed!")
+      clearCart()
+      navigate(`/orders-tracking`)
+    } catch (err) {
+      alert(err.response?.data?.error || "Failed to place order")
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  if (!cart.length) {
+    return (
+      <main className="min-h-screen bg-gray-50">
+        <div className="max-w-4xl mx-auto px-4 py-16 text-center">
           <FiShoppingBag className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <h2 className="text-2xl font-semibold text-gray-900 mb-2">Your cart is empty</h2>
-          <p className="text-gray-500 font-[600] max-w-[220px] mx-auto mt-6 mb-8">Looks like you haven't added anything to your cart yet.</p>
-          <Button variant="red">
-            <Link to="/productlist/All" className="flex items-center">Continue Shopping<FiArrowRight className="ml-2 w-4 h-4" /></Link>
-          </Button>
-        </motion.div>
-      </div>
-    </main>
-  );
+          <p className="text-gray-500 mb-8">Add some items before checking out.</p>
+          <Link to="/productlist/All">
+            <Button variant="red">Continue Shopping <FiArrowRight className="ml-2 inline" /></Button>
+          </Link>
+        </div>
+      </main>
+    )
+  }
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-5">
-          <h1 className="text-[25px] font-bold text-gray-900">Checkout Invoice</h1>
-          <p className="text-gray-600">Review your items and proceed to checkout</p>
-        </div>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Checkout</h1>
+          <p className="text-gray-500 mt-1">Review your order and complete purchase</p>
+        </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <div className="lg:col-span-3 space-y-4">
+        <div className="flex flex-col lg:flex-row gap-8">
+
+          {/* Left — Form */}
+          <div className="flex-1 space-y-6">
+            {/* Contact */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2 mb-4">
+                <FiUser className="w-5 h-5 text-rose-500" /> Contact
+              </h2>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <Input label="Full Name" value={form.fullName} onChange={(e) => set("fullName", e.target.value)} />
+                <Input label="Email" type="email" value={form.email} onChange={(e) => set("email", e.target.value)} />
+                <Input label="Phone *" type="tel" value={form.phone} onChange={(e) => set("phone", e.target.value)} placeholder="+92 300 1234567" className="sm:col-span-2" icon={FiPhone} />
+              </div>
+            </motion.div>
+
+            {/* Shipping */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2 mb-4">
+                <FiMapPin className="w-5 h-5 text-rose-500" /> Shipping Address
+              </h2>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <Input label="Street Address *" value={form.street} onChange={(e) => set("street", e.target.value)} icon={FiHome} className="sm:col-span-2" />
+                <Input label="City *" value={form.city} onChange={(e) => set("city", e.target.value)} />
+                <Input label="State *" value={form.state} onChange={(e) => set("state", e.target.value)} />
+                <Input label="Country *" value={form.country} onChange={(e) => set("country", e.target.value)} icon={FiGlobe} className="sm:col-span-2" />
+              </div>
+            </motion.div>
+
+            {/* Extras */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5 flex items-center gap-1.5"><FiTag className="w-4 h-4 text-rose-500" /> Coupon Code</label>
+                  <input
+                    value={form.couponCode}
+                    onChange={(e) => set("couponCode", e.target.value.toUpperCase())}
+                    placeholder="SAVE20"
+                    className="w-full h-11 rounded-xl border-2 border-gray-200 bg-white px-4 text-sm focus:outline-none focus:border-rose-400 transition-colors uppercase"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5 flex items-center gap-1.5"><FiMessageSquare className="w-4 h-4 text-rose-500" /> Notes</label>
+                  <input
+                    value={form.notes}
+                    onChange={(e) => set("notes", e.target.value)}
+                    placeholder="Leave at door, etc."
+                    className="w-full h-11 rounded-xl border-2 border-gray-200 bg-white px-4 text-sm focus:outline-none focus:border-rose-400 transition-colors"
+                  />
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Right — Summary */}
+          <div className="w-full lg:w-[420px] flex-shrink-0">
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="bg-gray-50 rounded-lg pb-6 pt-4 px-6 h-fit border-[2px] border-gray-200"
+              transition={{ delay: 0.15 }}
+              className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm sticky top-24"
             >
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Order Summary</h2>
-              <div className="space-y-3 mb-6">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Subtotal</span>
-                  <span className="font-medium">Rs {calculateActualTotalBill()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Discount</span>
-                  <span className="font-medium">Rs {(Number(calculateActualTotalBill()) - Number(calculateTotalBill())).toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Shipping</span>
-                  <span className="font-medium">Rs. 200</span>
-                </div>
-                <hr className="border-gray-200" />
-                <div className="flex justify-between text-lg font-semibold">
-                  <span>Total</span>
-                  <span>Rs. {(Number(calculateTotalBill()) + 200).toFixed(2)}</span>
-                </div>
+              <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2 mb-4">
+                <FiShoppingBag className="w-5 h-5 text-rose-500" /> Order Summary
+              </h2>
+
+              <div className="max-h-64 overflow-y-auto mb-4 -mx-1 px-1">
+                {cart.map((item, i) => (
+                  <CartItem key={`${item.product?._id}-${item.size}`} item={item} index={i} />
+                ))}
               </div>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                <p className="text-sm text-blue-800">Add Rs. {(Number(calculateTotalBill()) + 100).toFixed(2)} more to get free shipping!</p>
-              </div>
-
-              <div className="grid grid-cols-1 gap-2 lg:grid-cols-2">
-                <button onClick={handleConfirmOrder} className="w-full py-2 bg-gradient-to-r from-red-700 to-red-900 flex items-center justify-center rounded-[8px] hover:bg-gray-800 text-white">
-                  <FiCheck className="mr-2" /> Place Order
-                </button>
-                <Link to="/productlist/All">
-                  <Button variant="outline" className="w-full">Continue Shopping</Button>
-                </Link>
-              </div>
-            </motion.div>
-            {cart.map((item, index) => (
-              <CartItem key={`${item.id}-${item.size}`} id={item.id} size={item.size} quantity={item.quantity} index={index} product={productMap[item.id]} />
-            ))}
-          </div>
-
-          <div className="gap-6 lg:col-span-2">
-            <div className="space-y-6 p-4 bg-white border-[2px] border-gray-200 rounded-xl">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <FiUser className="mr-2 text-red-600" /> Personal Details
-                </h3>
-                <div className="space-y-4">
-                  <ProfileInput label="Full Name" value={formData.fullName} disabled className="bg-gray-50" />
-                  <ProfileInput label="Email Address" type="email" value={formData.email} disabled className="bg-gray-50" />
-                  <ProfileInput label="Phone Number" type="tel" value={formData.contact} disabled className="bg-gray-50" />
+              <div className="space-y-2.5 text-sm border-t border-gray-100 pt-4">
+                <div className="flex justify-between text-gray-600">
+                  <span>Subtotal</span>
+                  <span>Rs. {subtotal.toFixed(2)}</span>
                 </div>
-              </div>
-            </div>
-
-            <div className="space-y-6 mt-8 p-4 bg-white border-[2px] border-gray-200 rounded-xl">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <FiMapPin className="mr-2 text-red-600" /> Address Information
-                </h3>
-                <div className="space-y-4">
-                  <ProfileInput label="Street Address" value={formData.address.street} disabled className="bg-gray-50" />
-                  <div className="grid grid-cols-2 gap-4">
-                    <ProfileInput label="City" value={formData.address.city} disabled className="bg-gray-50" />
-                    <ProfileInput label="State" value={formData.address.state} disabled className="bg-gray-50" />
+                {discount > 0 && (
+                  <div className="flex justify-between text-green-700">
+                    <span>Discount</span>
+                    <span>-Rs. {discount.toFixed(2)}</span>
                   </div>
-                  <ProfileInput label="Country" value={formData.address.country} disabled className="bg-gray-50" />
+                )}
+                <div className="flex justify-between text-gray-600">
+                  <span>Shipping</span>
+                  <span>Rs. {shipping.toFixed(2)}</span>
+                </div>
+                <div className="border-t border-gray-200 pt-2.5 flex justify-between text-base font-bold text-gray-900">
+                  <span>Total</span>
+                  <span>Rs. {total.toFixed(2)}</span>
                 </div>
               </div>
-            </div>
+
+              <button
+                onClick={handlePlaceOrder}
+                disabled={submitting}
+                className="w-full mt-6 py-3 bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-700 hover:to-rose-800 text-white font-semibold rounded-xl shadow-lg shadow-rose-200 transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+              >
+                {submitting ? (
+                  <><FiLoader className="w-5 h-5 animate-spin" /> Placing Order...</>
+                ) : (
+                  <><FiCheck className="w-5 h-5" /> Place Order</>
+                )}
+              </button>
+
+              <Link to="/cart">
+                <button className="w-full mt-3 py-2.5 text-sm text-gray-500 hover:text-gray-700 border border-gray-200 rounded-xl transition-colors">
+                  Back to Cart
+                </button>
+              </Link>
+            </motion.div>
           </div>
         </div>
       </div>
     </main>
-  );
-};
+  )
+}
 
-export default Checkout;
+function Input({ label, icon: Icon, className = "", ...props }) {
+  return (
+    <div className={className}>
+      {label && <label className="block text-sm font-medium text-gray-700 mb-1.5">{label}</label>}
+      <div className="relative">
+        {Icon && <Icon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />}
+        <input
+          className={`w-full h-11 rounded-xl border-2 border-gray-200 bg-white ${Icon ? "pl-10" : "px-4"} text-sm focus:outline-none focus:border-rose-400 transition-colors`}
+          {...props}
+        />
+      </div>
+    </div>
+  )
+}
