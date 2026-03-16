@@ -1,14 +1,14 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useMarketplaceStore } from '../lib/marketplaceStore';
-import { post, apiCall } from '../api/client';
+import { useMarketplaceStore } from '../../lib/marketplaceStore';
+import { post, apiCall } from '../../api/client';
 import { useQueries } from '@tanstack/react-query';
 import { motion } from "motion/react"
 import { Link } from 'react-router-dom';
 import { FaTimes } from 'react-icons/fa';
 import { FiCheck, FiMapPin, FiUser, FiShoppingBag, FiArrowRight } from 'react-icons/fi';
-import Button from '../utilities/Button.jsx';
-import ProfileInput from '../utilities/ProfileInput.jsx';
+import Button from '../../utilities/Button.jsx';
+import ProfileInput from '../../utilities/ProfileInput.jsx';
 
 const CartItem = ({ id, size, quantity, index, product }) => {
   if (!product) return null;

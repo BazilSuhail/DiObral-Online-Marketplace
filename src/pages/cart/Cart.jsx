@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState, useMemo } from "react"
 import { motion } from "motion/react"
-import { useMarketplaceStore } from "../lib/marketplaceStore"
-import { post } from "../api/client"
+import { useMarketplaceStore } from "../../lib/marketplaceStore"
+import { post } from "../../api/client"
 import { useQueries } from "@tanstack/react-query"
-import { apiCall } from "../api/client"
+import { apiCall } from "../../api/client"
 import { FiTrash2, FiPlus, FiMinus, FiShoppingBag, FiArrowRight } from "react-icons/fi"
 import { Link } from "react-router-dom"
-import Button from "../utilities/Button.jsx"
+import Button from "../../utilities/Button.jsx"
 import { FaSave, FaTrashAlt } from "react-icons/fa"
 
 const Separator = ({ className = "" }) => <hr className={`border-gray-200 ${className}`} />

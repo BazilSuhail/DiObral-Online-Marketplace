@@ -15,10 +15,10 @@ import {
 import { BiLogInCircle } from "react-icons/bi";
 import { FiHome, FiInfo, FiList } from "react-icons/fi";
 import { useState } from "react"
-import SearchModal from "./SearchModal"
+import SearchModal from "../searchModal/SearchModal"
 import { Link, NavLink } from "react-router-dom"
-import { useMarketplaceStore } from "../lib/marketplaceStore"
-import CartModal from "./CartModal";
+import { useMarketplaceStore } from "../../lib/marketplaceStore"
+import CartModal from "../cartModal/CartModal";
 
 export default function Navbar() {
   const cart = useMarketplaceStore((s) => s.cart);

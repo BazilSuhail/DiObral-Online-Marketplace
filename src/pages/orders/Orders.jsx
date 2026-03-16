@@ -5,11 +5,11 @@ import {
   FiCalendar, FiGift, FiArrowRight, FiEye,
 } from "react-icons/fi"
 import { Link } from "react-router-dom"
-import { useMarketplaceStore } from "../lib/marketplaceStore"
-import { useApiQuery } from "../api/adapter"
-import Badge from "../utilities/Badge"
-import OrdersSkeleton from "../Components/Loaders/OrdersSkeleton"
-import { parseJwt } from "../lib/marketplaceStore"
+import { useMarketplaceStore } from "../../lib/marketplaceStore"
+import { useApiQuery } from "../../api/adapter"
+import Badge from "../../utilities/Badge"
+import OrdersSkeleton from "../../components/loaders/OrdersSkeleton"
+import { parseJwt } from "../../lib/marketplaceStore"
 
 const StatusIcon = ({ status }) => {
   const s = (status || "").toLowerCase();

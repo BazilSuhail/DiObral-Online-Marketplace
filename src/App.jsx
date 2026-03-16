@@ -1,16 +1,16 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom"
-import Home from "./Pages/Home.jsx";
-import About from "./Pages/About.jsx";
-import Products from "./Pages/Products.jsx";
-import ProductDetails from "./Pages/ProductDetails.jsx";
-import Cart from "./Pages/Cart.jsx";
-import Checkout from "./Pages/Checkout.jsx"; 
-import Orders from "./Pages/Orders.jsx";
+import Home from "./pages/home/Home.jsx";
+import About from "./pages/about/About.jsx";
+import Products from "./pages/products/Products.jsx";
+import ProductDetails from "./pages/productDetails/ProductDetails.jsx";
+import Cart from "./pages/cart/Cart.jsx";
+import Checkout from "./pages/checkout/Checkout.jsx"; 
+import Orders from "./pages/orders/Orders.jsx";
 import LoginPage from "./pages/auth/LoginPage.jsx";
 import RegisterPage from "./pages/auth/RegisterPage.jsx";
-import Profile from "./Pages/Profile.jsx";
-import Navbar from "./Components/Navbar.jsx";
-import Footer from "./Components/Footer.jsx";
+import Profile from "./pages/profile/Profile.jsx";
+import Navbar from "./components/navbar/Navbar.jsx";
+import Footer from "./components/footer/Footer.jsx";
 
 const authRoutes = ["/signin", "/signup"];
 

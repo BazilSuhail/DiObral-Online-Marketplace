@@ -3,7 +3,7 @@ import { AiOutlineSearch, AiOutlineClose, AiOutlineClockCircle } from "react-ico
 import { BiTrendingUp } from "react-icons/bi"
 import { useState, useEffect, useRef } from "react"
 import { useNavigate } from "react-router-dom"
-import { useApiQuery } from "../api/adapter"
+import { useApiQuery } from "../../api/adapter"
 
 export default function SearchModal({ isOpen, onClose }) {
   const [searchQuery, setSearchQuery] = useState("")

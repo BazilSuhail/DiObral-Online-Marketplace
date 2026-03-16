@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "motion/react";
-import { useMarketplaceStore } from '../lib/marketplaceStore';
-import { useApiQuery } from '../api/adapter';
+import { useMarketplaceStore } from '../../lib/marketplaceStore';
+import { useApiQuery } from '../../api/adapter';
 import { FiMinus, FiPlus, FiTrash2, FiShoppingCart } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 import { BsCartDash } from 'react-icons/bs';

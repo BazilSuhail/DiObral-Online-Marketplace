@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from "motion/react"
-import { get, post } from '../api/client';
+import { get, post } from '../../api/client';
 import { FaStar } from 'react-icons/fa';
-import MainLoader from '../Components/Loaders/mainLoader.jsx';
+import MainLoader from '../loaders/mainLoader.jsx';
 import { FiAlertCircle, FiEdit2, FiMessageSquare, FiStar } from 'react-icons/fi';
-import Button from '../utilities/Button.jsx';
+import Button from '../../utilities/Button.jsx';
 
 const Textarea = ({ className = "", ...props }) => {
   return (

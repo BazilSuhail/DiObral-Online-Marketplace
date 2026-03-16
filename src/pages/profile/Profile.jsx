@@ -5,12 +5,12 @@ import {
   FiSettings, FiLogOut, FiPackage,
 } from "react-icons/fi"
 import { Link, useNavigate } from "react-router-dom"
-import { useMarketplaceStore } from "../lib/marketplaceStore"
-import { useApiQuery, useApiMutation } from "../api/adapter"
-import Button from "../utilities/Button.jsx"
-import Card from "../utilities/Card.jsx"
-import ProfileInput from "../utilities/ProfileInput.jsx"
-import ProfileSkeleton from "../Components/Loaders/ProfileSkeleton.jsx"
+import { useMarketplaceStore } from "../../lib/marketplaceStore"
+import { useApiQuery, useApiMutation } from "../../api/adapter"
+import Button from "../../utilities/Button.jsx"
+import Card from "../../components/cartModal/CartModal.jsx"
+import ProfileInput from "../../utilities/ProfileInput.jsx"
+import ProfileSkeleton from "../../components/loaders/ProfileSkeleton.jsx"
 
 const Badge = ({ children, variant = "default", className = "" }) => {
   const variants = {

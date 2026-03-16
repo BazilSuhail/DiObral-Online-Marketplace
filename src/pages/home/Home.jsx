@@ -1,18 +1,18 @@
 import { useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, useInView } from 'motion/react';
-import { useApiQuery } from '../api/adapter';
+import { useApiQuery } from '../../api/adapter';
 import { FiStar, FiHeadphones, FiRefreshCw } from 'react-icons/fi';
 import { FaShippingFast } from "react-icons/fa";
 import { FaPeoplePulling } from "react-icons/fa6";
 import { FiShoppingBag, FiUsers, FiTruck, FiGlobe, FiTrendingUp, FiSettings, FiShield, FiZap } from "react-icons/fi";
-import MainLoader from '../Components/Loaders/mainLoader.jsx'
-import Section1 from '../Components/HomePage/Section1.jsx'
-import Section2 from '../Components/HomePage/Section2.jsx'
-import Section3 from '../Components/HomePage/Section3.jsx'
-import ScrollWordReveal from '../Components/HomePage/ScrollToReveal.jsx';
-import ContactSection from '../Components/HomePage/ContactSection.jsx';
-import Badge from '../utilities/Badge.jsx';
+import MainLoader from '../../components/loaders/mainLoader.jsx'
+import Section1 from '../../components/homePage/Section1.jsx'
+import Section2 from '../../components/homePage/Section2.jsx'
+import Section3 from '../../components/homePage/Section3.jsx'
+import ScrollWordReveal from '../../components/homePage/ScrollToReveal.jsx';
+import ContactSection from '../../components/homePage/ContactSection.jsx';
+import Badge from '../../utilities/Badge.jsx';
 
 const services = [
   { icon: FiSettings, title: "Manufacturing", description: "State-of-the-art manufacturing processes delivering products that exceed expectations in quality and design." },

@@ -5,11 +5,11 @@ import {
   FiPlus, FiMinus, FiLock, FiLogIn,
 } from "react-icons/fi"
 import { Link, useNavigate, useParams } from "react-router-dom"
-import { useMarketplaceStore } from "../lib/marketplaceStore"
-import { useApiQuery } from "../api/adapter"
-import ReviewProduct from "../Components/ProductReview.jsx"
-import Button from "../utilities/Button.jsx"
-import ProductDetailSkeleton from "../Components/Loaders/ProductDetailSkeleton.jsx"
+import { useMarketplaceStore } from "../../lib/marketplaceStore"
+import { useApiQuery } from "../../api/adapter"
+import ReviewProduct from "../../components/productReview/ProductReview.jsx"
+import Button from "../../utilities/Button.jsx"
+import ProductDetailSkeleton from "../../components/loaders/ProductDetailSkeleton.jsx"
 import { FaStar } from "react-icons/fa"
 
 const Badge = ({ children, variant = "default", className = "" }) => {
