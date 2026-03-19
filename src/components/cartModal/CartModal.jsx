@@ -4,6 +4,7 @@ import { useCartStore } from '../../store/cartStore';
 import { FiMinus, FiPlus, FiTrash2, FiShoppingCart, FiShoppingBag } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 import { BsCartDash } from 'react-icons/bs';
+import { getCartItemPrice } from '../../lib/utils';
 
 const panelVariants = {
   hidden: { width: 0 },
@@ -21,11 +22,9 @@ const CartItem = ({ item, onIncrease, onDecrease, onRemove, index }) => {
   const product = item.product;
   if (!product) return null;
 
-  const price = item.price;
-  const originalPrice = product.price;
-  const isDiscounted = price < originalPrice;
-  const discountPct = isDiscounted ? Math.round((1 - price / originalPrice) * 100) : 0;
-  const savings = isDiscounted ? ((originalPrice - price) * item.quantity).toFixed(2) : 0;
+  const { originalPrice, effectivePrice, hasSale, discountPct } = getCartItemPrice(item);
+  const price = effectivePrice;
+  const savings = hasSale ? ((originalPrice - price) * item.quantity).toFixed(2) : 0;
 
   return (
     <motion.div
@@ -41,7 +40,7 @@ const CartItem = ({ item, onIncrease, onDecrease, onRemove, index }) => {
             alt={product.name}
             className="rounded-lg border border-gray-200 w-[72px] h-[72px] object-cover"
           />
-          {isDiscounted && (
+          {hasSale && (
             <div className="absolute top-0 left-0 bg-gradient-to-br from-red-500 to-red-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-tl-lg rounded-br-md">
               {discountPct}%
             </div>
@@ -83,7 +82,7 @@ const CartItem = ({ item, onIncrease, onDecrease, onRemove, index }) => {
                 Rs. {(price * item.quantity).toFixed(2)}
               </div>
               <div className="text-[10px] text-gray-400">
-                {isDiscounted ? (
+                {hasSale ? (
                   <span><span className="line-through">Rs. {originalPrice.toFixed(2)}</span></span>
                 ) : (
                   <span>Rs. {price.toFixed(2)} /ea</span>
@@ -92,7 +91,7 @@ const CartItem = ({ item, onIncrease, onDecrease, onRemove, index }) => {
             </div>
           </div>
 
-          {isDiscounted && savings > 0 && (
+          {hasSale && savings > 0 && (
             <div className="mt-1.5 text-[10px] text-green-700 bg-green-50 border border-green-200 rounded-md px-2 py-0.5 inline-flex items-center gap-1">
               <FiShoppingBag className="w-2.5 h-2.5" /> Save Rs. {savings}
             </div>

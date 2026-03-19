@@ -28,10 +28,10 @@ export default function Footer() {
 
   const quickLinks = [
     { href: "/", label: "Home", id: "home" },
-    { href: "/productlist/All", label: "All Products", id: "all-products" },
-    { href: "/productlist/All", label: "Clothing", id: "clothing" },
-    { href: "/productlist/All", label: "Accessories", id: "accessories" },
-    { href: "/productlist/All", label: "Sale", id: "sale" },
+    { href: "/productlist/all", label: "All Products", id: "all-products" },
+    { href: "/productlist/all", label: "Clothing", id: "clothing" },
+    { href: "/productlist/all", label: "Accessories", id: "accessories" },
+    { href: "/productlist/all", label: "Sale", id: "sale" },
   ]
 
   const support = [

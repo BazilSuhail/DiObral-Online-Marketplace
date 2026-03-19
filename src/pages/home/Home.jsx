@@ -1,70 +1,31 @@
-import { useRef } from 'react';
+import { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion, useInView } from 'motion/react';
+import { motion } from 'motion/react';
+import { ReactLenis } from 'lenis/react';
 import { useApiQuery } from '../../api/adapter';
-import { FiStar, FiHeadphones, FiRefreshCw } from 'react-icons/fi';
-import { FaShippingFast } from "react-icons/fa";
-import { FaPeoplePulling } from "react-icons/fa6";
-import { FiShoppingBag, FiUsers, FiTruck, FiGlobe, FiTrendingUp, FiSettings, FiShield, FiZap } from "react-icons/fi";
+import { get } from '../../api/client';
+import { FiStar } from 'react-icons/fi';
 import MainLoader from '../../components/loaders/mainLoader.jsx'
-import Section1 from '../../components/homePage/Section1.jsx'
-import Section2 from '../../components/homePage/Section2.jsx'
-import Section3 from '../../components/homePage/Section3.jsx'
-import ScrollWordReveal from '../../components/homePage/ScrollToReveal.jsx';
-import ContactSection from '../../components/homePage/ContactSection.jsx';
-import Badge from '../../utilities/Badge.jsx';
+import Hero from '../../components/homePage/Hero.jsx'
+import { Gallery, Reviews } from '../../components/homePage/Showcase.jsx';
+import Reveal from '../../components/homePage/Reveal.jsx';
 
-const services = [
-  { icon: FiSettings, title: "Manufacturing", description: "State-of-the-art manufacturing processes delivering products that exceed expectations in quality and design." },
-  { icon: FiShoppingBag, title: "Sales", description: "Premium retail experience prioritizing customer needs and delivering exceptional service worldwide." },
-  { icon: FiGlobe, title: "Export", description: "Global export services maintaining honesty and transparency in all international dealings." },
-  { icon: FiZap, title: "Customization", description: "Utilizing cutting-edge technology to ensure high production standards and personalized solutions." },
-  { icon: FiTrendingUp, title: "Design", description: "Crafting unique designs that reflect texleath, style, and contemporary fashion trends." },
-  { icon: FiUsers, title: "Customer Support", description: "24/7 exceptional support ensuring complete customer satisfaction and seamless experience." },
-]
-
-const FeatureCard = ({ icon: Icon, title, description }) => (
-  <motion.div whileHover={{ y: -4 }} className="group p-6 bg-white rounded-2xl border border-gray-200 hover:border-red-200 hover:shadow-lg transition-all duration-300">
-    <div className="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center mb-4 group-hover:bg-red-100 transition-colors">
-      <Icon className="w-6 h-6 text-red-600" />
-    </div>
-    <h4 className="font-semibold text-gray-900 mb-2">{title}</h4>
-    <p className="text-gray-600 text-sm leading-relaxed">{description}</p>
-  </motion.div>
-)
-
-const AnimatedSection = ({ children, className = "" }) => {
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: "-100px" })
-  return (
-    <motion.div ref={ref} initial={{ opacity: 0, y: 60 }} animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 60 }} transition={{ duration: 0.8, ease: "easeOut" }} className={className}>
-      {children}
-    </motion.div>
-  )
-}
-
-const ServiceCard = ({ icon: Icon, title, description, delay = 0 }) => {
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true })
-  return (
-    <motion.div ref={ref} initial={{ opacity: 0, y: 30, scale: 0.9 }} animate={isInView ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 30, scale: 0.9 }} transition={{ duration: 0.6, delay, ease: "easeOut" }} whileHover={{ y: -8, scale: 1.02 }} className="group bg-white rounded-2xl p-8 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100">
-      <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-        <Icon className="w-8 h-8 text-white" />
-      </div>
-      <h3 className="text-xl font-bold text-gray-900 mb-3">{title}</h3>
-      <p className="text-gray-600 leading-relaxed">{description}</p>
-    </motion.div>
-  )
-}
+import Growth from '../../components/homePage/Growth.jsx';
+import Services from '../../components/homePage/Services.jsx';
+import Contact from '../../components/homePage/Contact.jsx';
+import Badge from '../../components/ui/Badge.jsx';
 
 const Home = () => {
   const navigate = useNavigate();
   const { data: products, isLoading, error } = useApiQuery("/api/home");
 
+  useEffect(() => { get("/").catch(() => { }) }, []);
+
   return (
+    <ReactLenis root>
     <main className="font-sans bg-gray-100 min-h-screen text-gray-800">
-      <Section1 />
-      <ScrollWordReveal />
+      <Hero />
+      <Reveal />
 
       <section className="mb-24 mt-32 lg:mt-12">
         <h3 className="text-[16px] lg:text-[20px] text-center heading-font text-red-700 font-sans font-[600]">Our Partners</h3>
@@ -82,7 +43,9 @@ const Home = () => {
         </div>
       </section>
 
-      <Section2 />
+      <Gallery />
+
+      <Growth />
 
       <div className="max-w-7xl mx-auto py-32">
         <div className="relative text-3xl font-semibold leading-relaxed">
@@ -126,10 +89,10 @@ const Home = () => {
           </motion.div>
 
           {isLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
               {Array.from({ length: 8 }).map((_, index) => (
                 <motion.div key={index} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4, delay: index * 0.1 }} className="bg-white rounded-lg shadow-sm animate-pulse">
-                  <div className="h-74 bg-gray-200 rounded-md mb-4"></div>
+                  <div className="aspect-[4/5] bg-gray-200 rounded-md mb-4"></div>
                   <div className="h-4 mx-4 bg-gray-300 rounded w-2/4 mb-2"></div>
                   <div className="h-4 mx-4 bg-gray-300 rounded w-3/4 mb-2"></div>
                   <div className="flex mx-2 items-center mb-2 space-x-1"><div className="w-10 h-4 bg-gray-300 rounded ml-2 mb-4" /></div>
@@ -138,7 +101,7 @@ const Home = () => {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
                 {(products?.latest || []).map((product, index) => {
                   const discountedPrice = product.sale
                     ? (product.price - (product.price * product.sale) / 100).toFixed(2)
@@ -147,26 +110,26 @@ const Home = () => {
                     <motion.div key={product._id || product.id} initial={{ scale: 0.9 }} whileInView={{ scale: 1 }} transition={{ duration: 0.2, delay: index * 0.1 }} whileHover={{ y: -5 }} className="group cursor-pointer">
                       <Link to={`/products/${product._id}`}>
                         <div className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow overflow-hidden">
-                          <div className="relative">
-                            <img src={`${import.meta.env.VITE_API_BASE_URL}/uploads/${product.image}`} alt={product.name} className="w-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                          <div className="relative aspect-[4/5] overflow-hidden bg-gray-50">
+                            <img src={`${import.meta.env.VITE_API_BASE_URL}/uploads/${product.image}`} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                             {product.sale > 0 && (
                               <Badge className="absolute top-3 left-3 bg-red-500 hover:bg-red-600">Sale</Badge>
                             )}
                           </div>
-                          <div className="p-6">
+                          <div className="p-4 sm:p-6">
                             <div className="flex items-center mb-2">
                               <div className="flex items-center">
                                 {[...Array(5)].map((_, i) => (
-                                  <FiStar key={i} className={`w-4 h-4 ${i < Math.floor(product.rating) ? "text-yellow-400 fill-current" : "text-gray-300"}`} />
+                                  <FiStar key={i} className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${i < Math.floor(product.rating) ? "text-yellow-400 fill-current" : "text-gray-300"}`} />
                                 ))}
                               </div>
-                              <span className="text-sm text-gray-500 ml-2">({product.reviews})</span>
+                              <span className="text-xs sm:text-sm text-gray-500 ml-2">({product.reviews})</span>
                             </div>
-                            <h3 className="font-semibold text-gray-900 mb-2">{product.name}</h3>
+                            <h3 className="font-semibold text-gray-900 mb-2 text-sm sm:text-base line-clamp-1">{product.name}</h3>
                             <div className="flex items-center space-x-2">
-                              <span className="text-lg font-bold text-gray-900">${product.price}</span>
-                              {discountedPrice > product.price && (
-                                <span className="text-sm text-gray-500 line-through">${discountedPrice}</span>
+                              <span className="text-base sm:text-lg font-bold text-gray-900">${discountedPrice}</span>
+                              {product.sale > 0 && (
+                                <span className="text-xs sm:text-sm text-gray-500 line-through">${product.price.toFixed(2)}</span>
                               )}
                             </div>
                           </div>
@@ -177,31 +140,22 @@ const Home = () => {
                 })}
               </div>
               <div className="w-full flex">
-                <button onClick={() => navigate('/productlist/All')} className="mx-auto mt-[55px] shop-now relative overflow-hidden px-8 py-2 border-2 border-white text-white text-lg font-bold rounded-[35px] bg-red-700 shadow-md hover:bg-red-800 hover:text-white hover:shadow-lg active:scale-90 transition-transform duration-300">Shop now</button>
+                <button onClick={() => navigate('/productlist/all')} className="mx-auto mt-[55px] shop-now relative overflow-hidden px-8 py-2 border-2 border-white text-white text-lg font-bold rounded-[35px] bg-red-700 shadow-md hover:bg-red-800 hover:text-white hover:shadow-lg active:scale-90 transition-transform duration-300">Shop now</button>
               </div>
             </>
           )}
         </div>
       </section>
 
-      <AnimatedSection className="pb-20 lg:pb-32">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <motion.h2 initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">What We <span className="text-red-600">Offer</span></motion.h2>
-            <motion.p initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }} className="text-xl text-gray-600 max-w-3xl mx-auto">From manufacturing to global export, we provide comprehensive solutions that exceed expectations.</motion.p>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {services.map((service, index) => (<ServiceCard key={service.title} {...service} delay={index * 0.1} />))}
-          </div>
-        </div>
-      </AnimatedSection>
+      <Services />
 
       <section>
         <h2 className="text-2xl md:text-4xl font-bold mb-8 text-red-600 text-center">What Our Clients Say</h2>
-        <Section3 />
+        <Reviews />
       </section>
-      <ContactSection />
+      <Contact />
     </main>
+    </ReactLenis>
   );
 }
 

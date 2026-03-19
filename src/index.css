@@ -1,10 +1,15 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+}
+
 *{
   scroll-behavior: smooth;
 }
 
-body{
+body {
+  font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
   background-color: #F6F7F9;
 }
 
@@ -18,7 +23,7 @@ body{
 }
 
 .title-poppins {
-  font-family: poppins, Arial, ; 
+  font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
 }
 
 ::-webkit-scrollbar-track {

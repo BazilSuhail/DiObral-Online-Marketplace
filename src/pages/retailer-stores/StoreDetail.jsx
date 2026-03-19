@@ -284,8 +284,9 @@ export default function StoreDetail() {
                 <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
                   {products.map((p, i) => {
                     const pPrice = p.price ?? 0
-                    const pSale = p.sale ?? 0
-                    const pHasSale = pSale > 0 && pSale < pPrice
+                    const pSalePercentage = p.sale ?? 0
+                    const pHasSale = pSalePercentage > 0 && pSalePercentage < 100
+                    const pSale = pHasSale ? pPrice * (1 - pSalePercentage / 100) : pPrice
                     return (
                       <Link key={p._id} to={`/products/${p._id}`}>
                         <motion.div

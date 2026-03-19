@@ -8,9 +8,9 @@ import { Link, useNavigate } from "react-router-dom"
 import { useAuthStore } from "../../store/authStore"
 import { useCartStore } from "../../store/cartStore"
 import { useApiQuery, useApiMutation } from "../../api/adapter"
-import Button from "../../utilities/Button.jsx"
-import Card from "../../utilities/Card.jsx"
-import ProfileInput from "../../utilities/ProfileInput.jsx"
+import Button from "../../components/ui/Button.jsx"
+import Card from "../../components/ui/Card.jsx"
+import ProfileInput from "../../components/ui/ProfileInput.jsx"
 import ProfileSkeleton from "../../components/loaders/ProfileSkeleton.jsx"
 
 const Badge = ({ children, variant = "default", className = "" }) => {
@@ -195,10 +195,10 @@ export default function ProfilePage() {
                       <FiUser className="mr-2 text-red-600" /> Personal Details
                     </h3>
                     <div className="space-y-4">
-                      <ProfileInput label="Full Name" value={formData.fullName} onChange={(e) => handleInputChange("fullName", e.target.value)} disabled={!isEditing} className={!isEditing ? "bg-gray-50" : ""} />
-                      <ProfileInput label="Email Address" type="email" value={formData.email} onChange={(e) => handleInputChange("email", e.target.value)} disabled={!isEditing} className={!isEditing ? "bg-gray-50" : ""} />
-                      <ProfileInput label="Phone Number" type="tel" value={formData.contact} onChange={(e) => handleInputChange("contact", e.target.value)} disabled={!isEditing} className={!isEditing ? "bg-gray-50" : ""} />
-                      <ProfileInput label="Bio" value={formData.bio} onChange={(e) => handleInputChange("bio", e.target.value)} disabled={!isEditing} className={!isEditing ? "bg-gray-50" : ""} />
+                      <ProfileInput label="Full Name" value={formData.fullName} onChange={(e) => handleInputChange("fullName", e.target.value)} disabled={!isEditing} />
+                      <ProfileInput label="Email Address" type="email" value={formData.email} onChange={(e) => handleInputChange("email", e.target.value)} disabled={!isEditing} />
+                      <ProfileInput label="Phone Number" type="tel" value={formData.contact} onChange={(e) => handleInputChange("contact", e.target.value)} disabled={!isEditing} />
+                      <ProfileInput label="Bio" value={formData.bio} onChange={(e) => handleInputChange("bio", e.target.value)} disabled={!isEditing} />
                     </div>
                   </div>
                 </div>
@@ -208,14 +208,14 @@ export default function ProfilePage() {
                       <FiMapPin className="mr-2 text-red-600" /> Address Information
                     </h3>
                     <div className="space-y-4">
-                      <ProfileInput label="Street Address" value={formData.address.street} onChange={(e) => handleAddressInputChange("street", e.target.value, "address")} disabled={!isEditing} className={!isEditing ? "bg-gray-50" : ""} />
+                      <ProfileInput label="Street Address" value={formData.address.street} onChange={(e) => handleAddressInputChange("street", e.target.value, "address")} disabled={!isEditing} />
                       <div className="grid grid-cols-2 gap-4">
-                        <ProfileInput label="City" value={formData.address.city} onChange={(e) => handleAddressInputChange("city", e.target.value, "address")} disabled={!isEditing} className={!isEditing ? "bg-gray-50" : ""} />
-                        <ProfileInput label="State" value={formData.address.state} onChange={(e) => handleAddressInputChange("state", e.target.value, "address")} disabled={!isEditing} className={!isEditing ? "bg-gray-50" : ""} />
+                        <ProfileInput label="City" value={formData.address.city} onChange={(e) => handleAddressInputChange("city", e.target.value, "address")} disabled={!isEditing} />
+                        <ProfileInput label="State" value={formData.address.state} onChange={(e) => handleAddressInputChange("state", e.target.value, "address")} disabled={!isEditing} />
                       </div>
                       <div className="grid grid-cols-2 gap-4">
-                        <ProfileInput label="Zip Code" value={formData.address.zip} onChange={(e) => handleAddressInputChange("zip", e.target.value, "address")} disabled={!isEditing} className={!isEditing ? "bg-gray-50" : ""} />
-                        <ProfileInput label="Country" value={formData.address.country} onChange={(e) => handleAddressInputChange("country", e.target.value, "address")} disabled={!isEditing} className={!isEditing ? "bg-gray-50" : ""} />
+                        <ProfileInput label="Zip Code" value={formData.address.zip} onChange={(e) => handleAddressInputChange("zip", e.target.value, "address")} disabled={!isEditing} />
+                        <ProfileInput label="Country" value={formData.address.country} onChange={(e) => handleAddressInputChange("country", e.target.value, "address")} disabled={!isEditing} />
                       </div>
                     </div>
                   </div>

@@ -28,3 +28,66 @@ const statusColors = {
 export function statusBadge(status) {
   return statusColors[status] || "bg-gray-100 text-gray-700";
 }
+
+export function getCartItemPrice(item) {
+  if (item?.itemType === "bundle") {
+    const bundlePrice = Number(item.price ?? item.bundle?.price ?? 0) || 0
+    return { originalPrice: bundlePrice, effectivePrice: bundlePrice, hasSale: false, discountPct: 0 }
+  }
+  const originalPrice = Number(item?.product?.price ?? item?.price ?? 0) || 0
+  const salePct = Number(item?.product?.sale ?? item?.sale ?? 0) || 0
+  const hasSale = salePct > 0 && salePct < 100
+  const effectivePrice = hasSale ? originalPrice * (1 - salePct / 100) : originalPrice
+  const discountPct = hasSale && originalPrice > 0 ? Math.round(salePct) : 0
+  return { originalPrice, effectivePrice, hasSale, discountPct }
+}
+
+export function limitText(text, max = 40) {
+  if (!text) return ""
+  const str = String(text).trim()
+  return str.length > max ? `${str.slice(0, max).trimEnd()}...` : str
+}
+
+export function normalizeTags(tags) {
+  if (!tags) return []
+  const result = []
+  const seen = new Set()
+
+  const clean = (value) => {
+    if (Array.isArray(value)) {
+      value.forEach(clean)
+      return
+    }
+    if (typeof value !== "string") return
+
+    const trimmed = value.trim()
+    if (!trimmed) return
+
+    if (trimmed.startsWith("[")) {
+      try {
+        const parsed = JSON.parse(trimmed)
+        if (Array.isArray(parsed)) {
+          parsed.forEach(clean)
+          return
+        }
+      } catch {
+        /* fall through to comma split */
+      }
+    }
+
+    trimmed
+      .replace(/\\"/g, '"')
+      .split(",")
+      .map((part) => part.replace(/^"|"$/g, "").trim())
+      .filter(Boolean)
+      .forEach((tag) => {
+        if (!seen.has(tag.toLowerCase())) {
+          seen.add(tag.toLowerCase())
+          result.push(tag)
+        }
+      })
+  }
+
+  clean(tags)
+  return result
+}

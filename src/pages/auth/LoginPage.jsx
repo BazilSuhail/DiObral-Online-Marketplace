@@ -1,13 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { useAuthStore } from "../../store/authStore";
-import { post } from "../../api/client";
-import {
-  FiMail, FiLock, FiEye, FiEyeOff, FiArrowRight,
-  FiShoppingBag, FiWatch, FiHeadphones, FiCamera, FiSmartphone,
-  FiMonitor, FiTrendingUp, FiStar, FiHeart,
-} from "react-icons/fi";
+import { useApiMutation } from "../../api/adapter";
+import { FiMail, FiLock, FiEye, FiEyeOff, FiArrowRight, FiShoppingBag, FiTruck, FiShield, FiGift, FiTrendingUp, FiMinus } from "react-icons/fi";
 
 function useLoopingTypewriter(phrases, typeSpeed = 50, deleteSpeed = 25, pause = 2500) {
   const [text, setText] = useState("");
@@ -36,37 +32,40 @@ function useLoopingTypewriter(phrases, typeSpeed = 50, deleteSpeed = 25, pause =
   return text;
 }
 
-const categories = [
-  { icon: FiShoppingBag, name: "Fashion", items: "240+ Products", gradient: "from-violet-500 to-purple-600", price: "From $9" },
-  { icon: FiWatch, name: "Accessories", items: "180+ Products", gradient: "from-amber-500 to-orange-600", price: "From $15" },
-  { icon: FiHeadphones, name: "Electronics", items: "320+ Products", gradient: "from-cyan-500 to-blue-600", price: "From $29" },
-  { icon: FiCamera, name: "Photography", items: "95+ Products", gradient: "from-emerald-500 to-teal-600", price: "From $49" },
-  { icon: FiSmartphone, name: "Mobile", items: "150+ Products", gradient: "from-rose-500 to-pink-600", price: "From $199" },
-  { icon: FiMonitor, name: "Computers", items: "110+ Products", gradient: "from-indigo-500 to-blue-700", price: "From $399" },
+const container = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.08 } }
+};
+
+const itemAnim = {
+  hidden: { opacity: 0, y: 15 },
+  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } }
+};
+
+const features = [
+  { icon: FiShoppingBag, label: "Shop Categories", desc: "Browse hundreds of products across top brands" },
+  { icon: FiTruck, label: "Fast Delivery", desc: "Real-time tracking from store to your doorstep" },
+  { icon: FiShield, label: "Secure Payments", desc: "Protected transactions with multiple options" },
+  { icon: FiGift, label: "Exclusive Deals", desc: "Member-only discounts and seasonal offers" },
 ];
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const login = useAuthStore((s) => s.login);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("bazil1854@gmail.com");
+  const [password, setPassword] = useState("112233");
   const [showPw, setShowPw] = useState(false);
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError("");
-    try {
-      const data = await post("/auth/login", { email, password });
+  const { mutate, isPending, error } = useApiMutation("/auth/login", "POST", {
+    onSuccess: (data) => {
       login(data.token, data.user);
       navigate("/");
-    } catch (err) {
-      setError(err.response?.data?.message || err.response?.data?.error || "Invalid email or password");
-    } finally {
-      setIsLoading(false);
-    }
+    },
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    mutate({ email, password });
   };
 
   const continuousText = useLoopingTypewriter([
@@ -78,32 +77,42 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-white relative overflow-hidden">
 
-      {/* Left Column */}
-      <div className="hidden lg:flex px-16 xl:px-24 py-16 flex-col justify-between bg-gradient-to-br from-gray-50 via-white to-red-50/30 relative overflow-hidden">
+      {/* Decorative Center Divider */}
+      <motion.div
+        initial={{ opacity: 0, scaleY: 0 }}
+        animate={{ opacity: 1, scaleY: 1 }}
+        transition={{ duration: 0.7, ease: "easeInOut" }}
+        className="hidden lg:block absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[2px] h-4/5 bg-gradient-to-b from-transparent via-red-200 to-transparent origin-center z-10"
+      >
+        <motion.div
+          animate={{ y: [-12, 12, -12] }}
+          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white border border-red-200 shadow-sm flex items-center justify-center"
+        >
+          <FiMinus size={12} className="text-red-500" />
+        </motion.div>
+      </motion.div>
+
+      {/* Left Column: Branding & Features */}
+      <div className="hidden lg:flex px-16 xl:px-24 py-16 flex-col justify-between bg-gray-50/40 relative">
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="flex items-center gap-3 z-10"
+          className="flex items-center gap-3"
         >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center shadow-lg shadow-red-500/20">
-            <FiShoppingBag size={18} className="text-white" />
-          </div>
-          <span className="text-xl font-bold text-gray-900">DiObral</span>
+          <img src="/logo.png" alt="DiObral" className="w-9 h-9 object-contain" />
+          <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">DiObral</span>
         </motion.div>
 
-        <div className="my-auto max-w-lg z-10">
+        <div className="my-auto max-w-lg">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.5 }}
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-50 border border-red-100 mb-5">
-              <FiHeart size={12} className="text-red-500" />
-              <span className="text-xs font-medium text-red-600">Trusted by 10k+ shoppers</span>
-            </div>
-            <h1 className="text-4xl font-bold text-gray-900 tracking-tight leading-tight">
-              Discover<br />something<span className="text-red-600"> new</span>
+            <h1 className="text-4xl font-semibold text-gray-900 tracking-tight leading-tight">
+              Discover<br />something new.
             </h1>
             <p className="text-gray-500 text-sm mt-3 leading-relaxed min-h-[48px] max-w-md">
               {continuousText}
@@ -111,55 +120,54 @@ export default function LoginPage() {
             </p>
           </motion.div>
 
-          <div className="mt-10 overflow-hidden -mx-4 px-4">
-            <div className="relative">
-              <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-gray-50 via-gray-50/80 to-transparent z-10 pointer-events-none" />
-              <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-gray-50 via-gray-50/80 to-transparent z-10 pointer-events-none" />
+          <motion.div
+            variants={container}
+            initial="hidden"
+            animate="show"
+            className="mt-10 space-y-3"
+          >
+            {features.map(({ icon: Icon, label, desc }) => (
               <motion.div
-                animate={{ x: ["0%", "-50%"] }}
-                transition={{ duration: 30, ease: "linear", repeat: Infinity }}
-                className="flex gap-4 w-max"
+                key={label}
+                variants={itemAnim}
+                whileHover={{ y: -3, x: 4, transition: { duration: 0.2 } }}
+                className="flex items-start gap-4 bg-white rounded-2xl px-5 py-4 border border-gray-100 shadow-sm hover:shadow-md transition-all group cursor-pointer"
               >
-                {[...categories, ...categories].map((cat, i) => (
-                  <div
-                    key={i}
-                    className="flex-shrink-0 w-44 rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 group cursor-pointer"
-                  >
-                    <div className={`h-20 bg-gradient-to-br ${cat.gradient} flex items-center justify-center relative overflow-hidden`}>
-                      <div className="absolute inset-0 bg-white/10 group-hover:bg-white/0 transition-colors" />
-                      <cat.icon size={28} className="text-white/90 group-hover:scale-110 transition-transform" />
-                      <div className="absolute top-2 right-2 bg-white/20 backdrop-blur-sm rounded-full px-2 py-0.5">
-                        <span className="text-[10px] font-bold text-white">{cat.price}</span>
-                      </div>
-                    </div>
-                    <div className="bg-white px-3.5 py-3">
-                      <p className="text-sm font-bold text-gray-800">{cat.name}</p>
-                      <p className="text-[11px] text-gray-400 mt-0.5">{cat.items}</p>
-                    </div>
-                  </div>
-                ))}
+                <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center flex-shrink-0 group-hover:scale-110 group-hover:bg-red-500 transition-all duration-300">
+                  <Icon size={18} className="text-red-600 group-hover:text-white transition-colors" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-800">{label}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{desc}</p>
+                </div>
               </motion.div>
-            </div>
-          </div>
+            ))}
+          </motion.div>
         </div>
 
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6 }}
-          className="flex items-center gap-5 text-xs text-gray-400 z-10"
+          className="flex items-center gap-5 text-xs text-gray-400"
         >
           <span>&copy; 2026 DiObral</span>
           <span className="w-1 h-1 rounded-full bg-gray-300" />
-          <span className="flex items-center gap-1"><FiStar size={12} /> 4.8 avg rating</span>
+          <span className="flex items-center gap-1"><FiTrendingUp size={12} /> Customer Store</span>
         </motion.div>
       </div>
 
-      {/* Right Column */}
+      {/* Right Column: Login Form */}
       <div className="flex items-center justify-center p-8 relative bg-white">
+
+        {/* Soft Background Canvas Ambient Blurs */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden hidden lg:block">
           <motion.div
-            animate={{ scale: [1, 1.15, 1], x: [0, 20, 0], y: [0, -20, 0] }}
+            animate={{
+              scale: [1, 1.15, 1],
+              x: [0, 20, 0],
+              y: [0, -20, 0]
+            }}
             transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
             className="absolute top-1/4 right-1/4 w-80 h-80 bg-red-100/40 rounded-full blur-3xl"
           />
@@ -171,28 +179,30 @@ export default function LoginPage() {
           transition={{ duration: 0.5, ease: "easeOut" }}
           className="w-full max-w-md px-4 sm:px-6 z-10"
         >
+          {/* Mobile Only Header */}
           <div className="lg:hidden flex items-center gap-2 mb-10">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center">
-              <FiShoppingBag size={16} className="text-white" />
-            </div>
+            <img src="/diobral.png" alt="DiObral" className="w-8 h-8" />
             <span className="font-bold text-gray-800 text-lg">DiObral</span>
           </div>
 
           <div className="mb-8">
             <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Welcome back</h2>
-            <p className="text-gray-400 text-sm mt-1.5">Sign in to your account to continue shopping</p>
+            <p className="text-gray-400 text-sm mt-1.5">Sign in to continue shopping</p>
           </div>
 
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded-xl mb-6 border border-red-100 flex items-center gap-2"
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-              {error}
-            </motion.div>
-          )}
+          <AnimatePresence mode="wait">
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 10 }}
+                className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded-xl mb-6 border border-red-100 flex items-center gap-2"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                {error.response?.data?.message || "Invalid email or password"}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
@@ -234,9 +244,9 @@ export default function LoginPage() {
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
                 className="w-full bg-gradient-to-r from-red-600 to-red-700 text-white py-3.5 rounded-xl font-semibold text-sm hover:from-red-700 hover:to-red-800 disabled:opacity-50 transition-all shadow-lg shadow-red-600/15 flex items-center justify-center gap-2"
-                disabled={isLoading}
+                disabled={isPending}
               >
-                {isLoading ? (
+                {isPending ? (
                   <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />

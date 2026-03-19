@@ -36,7 +36,7 @@ export default function SearchModal({ isOpen, onClose }) {
 
   const handleSearch = (query = searchQuery) => {
     if (query.trim()) {
-      navigate(`/productlist/All?search=${encodeURIComponent(query.trim())}`)
+      navigate(`/productlist/all?search=${encodeURIComponent(query.trim())}`)
       onClose()
       setSearchQuery("")
     }

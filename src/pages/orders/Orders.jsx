@@ -2,13 +2,13 @@ import { useState, useMemo } from "react"
 import { motion } from "motion/react"
 import {
   FiX, FiCheck, FiClock, FiTruck, FiPackage, FiCalendar,
-  FiGift, FiArrowRight, FiBox,
+  FiGift, FiArrowRight, FiBox, FiChevronDown, FiLoader,
 } from "react-icons/fi"
-import { Link } from "react-router-dom"
+import { Link, useLocation, useNavigate } from "react-router-dom"
 import { useAuthStore, parseJwt } from "../../store/authStore"
 import { useApiQuery } from "../../api/adapter"
 import OrdersSkeleton from "../../components/loaders/OrdersSkeleton"
-import Button from "../../utilities/Button"
+import Button from "../../components/ui/Button"
 import { FaStore } from "react-icons/fa6"
 
 const statusConfig = {
@@ -38,60 +38,66 @@ function OrderGroupCard({ group }) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden"
+      className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden"
     >
-      {/* Group header */}
-      <div className={`px-5 py-3.5 flex items-center justify-between border-b border-gray-100`}>
-        <div className="flex items-center gap-3">
-          <div className={`w-9 h-9 rounded-xl ${cfg.bg} flex items-center justify-center`}>
+      <div className="px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 bg-gray-50/50">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className={`w-10 h-10 rounded-xl ${cfg.bg} flex items-center justify-center flex-shrink-0`}>
             <cfg.icon className={`w-5 h-5 ${cfg.text}`} />
           </div>
-          <div>
-            <p className="text-xs text-gray-400 flex items-center gap-1">
-              <FiCalendar className="w-3 h-3" />
+          <div className="min-w-0">
+            <p className="text-sm font-bold text-gray-900 truncate">Order #{group.groupOrderId?.slice(0, 8)}</p>
+            <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
+              <FiCalendar className="w-3 h-3 flex-shrink-0" />
               {new Date(group.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
             </p>
-            <p className="text-[10px] text-gray-400 font-mono">#{group.groupOrderId?.slice(0, 8)}</p>
           </div>
         </div>
-        <div className="text-right">
+        <div className="text-left sm:text-right flex sm:block items-center gap-3 flex-shrink-0">
           <p className="font-bold text-gray-900">Rs. {group.total?.toFixed(2)}</p>
           <StatusBadge status={bestStatus} />
         </div>
       </div>
 
-      {/* Sub-orders per store */}
-      <div className="divide-y divide-gray-50">
+      <div className="p-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
         {group.orders?.map((order) => (
           <Link
             key={order._id}
             to={`/orders/${order._id}`}
-            className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors"
+            className="group flex flex-col sm:flex-row sm:items-center gap-3 p-4 rounded-xl border border-gray-100 bg-gray-50/50 hover:bg-white hover:border-gray-200 hover:shadow-md transition-all"
           >
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center flex-shrink-0">
-              <FaStore className="w-4 h-4 text-gray-500" />
+            <div className="flex items-center gap-3 min-w-0 w-full">
+              <div className="flex -space-x-2 flex-shrink-0">
+                {order.items?.slice(0, 3).map((item, i) => (
+                  <div key={i} className="w-10 h-10 rounded-lg border-2 border-white bg-gray-100 flex items-center justify-center overflow-hidden shadow-sm">
+                    {item.image ? (
+                      <img src={`${import.meta.env.VITE_API_BASE_URL}/uploads/${item.image}`} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <FiBox className="w-4 h-4 text-gray-400" />
+                    )}
+                  </div>
+                ))}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-gray-900 truncate flex items-center gap-1.5">
+                  <FaStore className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                  <span className="truncate">{order.store?.storeName || "Store"}</span>
+                </p>
+                <p className="text-xs text-gray-400 mt-0.5 truncate">
+                  {order.items?.length || 0} items &middot; Rs. {order.total?.toFixed(2)}
+                </p>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">{order.store?.storeName || "Store"}</p>
-              <p className="text-xs text-gray-400">{order.items?.length || 0} items &middot; Rs. {order.total?.toFixed(2)}</p>
+            <div className="flex sm:flex-col items-center sm:items-end justify-between gap-2 sm:gap-1.5 flex-shrink-0 w-full sm:w-auto">
+              <StatusBadge status={order.status} size="sm" />
+              <span className="flex items-center gap-1 text-[11px] font-medium text-gray-400 group-hover:text-rose-500 transition-colors">
+                Details <FiArrowRight className="w-3 h-3" />
+              </span>
             </div>
-            <div className="flex -space-x-1.5">
-              {order.items?.slice(0, 3).map((item, i) => (
-                <div key={i} className="w-7 h-7 rounded-md border-2 border-white bg-gray-100 flex items-center justify-center overflow-hidden">
-                  {item.image ? (
-                    <img src={`${import.meta.env.VITE_API_BASE_URL}/uploads/${item.image}`} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <FiBox className="w-3 h-3 text-gray-400" />
-                  )}
-                </div>
-              ))}
-            </div>
-            <FiArrowRight className="w-4 h-4 text-gray-300 flex-shrink-0" />
           </Link>
         ))}
       </div>
 
-      {/* Group summary */}
       {group.totalSavings > 0 && (
         <div className="px-5 py-2.5 bg-green-50 border-t border-green-100 flex items-center gap-1.5 text-xs text-green-700">
           <FiGift className="w-3.5 h-3.5" /> You saved Rs. {group.totalSavings?.toFixed(2)} on this order
@@ -114,11 +120,20 @@ export default function Orders() {
   const decoded = parseJwt(token)
   const userId = decoded?.id
 
+  const location = useLocation()
+  const navigate = useNavigate()
+  const justPlaced = location.state?.justPlaced
+
   const [filterStatus, setFilterStatus] = useState("")
 
-  const { data, isLoading } = useApiQuery("/orders", { status: filterStatus || undefined }, { enabled: !!userId })
+  const { data, isLoading, isFetching } = useApiQuery(
+    "/orders",
+    { status: filterStatus || undefined },
+    { enabled: !!userId, placeholderData: (prev) => prev },
+  )
 
   const groups = data?.orders || []
+  const firstLoad = isLoading && !data
 
   const stats = useMemo(() => {
     const all = groups
@@ -130,79 +145,112 @@ export default function Orders() {
     }
   }, [groups])
 
-  if (isLoading) return <OrdersSkeleton />
+  if (firstLoad) return <OrdersSkeleton />
+
   const hasOrders = groups.length > 0
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <main className="min-h-screen bg-slate-50/40 text-gray-800 pb-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
 
-        {/* Header */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">My Orders</h1>
-          <p className="text-gray-500 mt-1">Track and manage your purchases</p>
+          <p className="text-sm text-gray-400 mt-1">Track and manage your purchases</p>
         </motion.div>
 
-        {/* Stats */}
-        {hasOrders && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <StatCard label="Order Groups" value={stats.total} icon={FiBox} color="text-gray-600" bg="bg-gray-100" />
-            <StatCard label="Items" value={stats.totalItems} icon={FiPackage} color="text-blue-600" bg="bg-blue-100" />
-            <StatCard label="Total Spent" value={`Rs. ${stats.totalSpent.toFixed(0)}`} icon={FiGift} color="text-green-600" bg="bg-green-100" />
-            <StatCard label="Saved" value={`Rs. ${stats.totalSavings.toFixed(0)}`} icon={FiClock} color="text-amber-600" bg="bg-amber-100" />
+        {justPlaced && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8 bg-green-50 border border-green-200 rounded-2xl p-5 flex items-start gap-4">
+            <div className="w-11 h-11 rounded-xl bg-green-600 text-white flex items-center justify-center flex-shrink-0">
+              <FiCheck className="w-6 h-6" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-gray-900">Order placed successfully!</p>
+              <p className="text-sm text-gray-600 mt-0.5">
+                Thank you for your order
+                {justPlaced.count > 0 && <> &mdash; {justPlaced.count} package{justPlaced.count > 1 ? "s" : ""} </>}
+                totaling <span className="font-semibold text-gray-900">Rs. {justPlaced.total?.toFixed(2)}</span>
+                {justPlaced.groupOrderId && <> (reference <span className="font-mono font-medium text-gray-900">#{justPlaced.groupOrderId.slice(0, 8)}</span>)</>}.
+                Track it below.
+              </p>
+            </div>
+            <button
+              onClick={() => navigate("/orders-tracking", { replace: true, state: null })}
+              className="text-gray-400 hover:text-gray-600 flex-shrink-0"
+              aria-label="Dismiss"
+            >
+              <FiX className="w-5 h-5" />
+            </button>
           </motion.div>
         )}
 
-        {/* Filters */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-8 overflow-x-auto">
-          <div className="bg-white border border-gray-200 rounded-xl p-1.5 inline-flex gap-1">
-            {statusFilters.map((f) => (
-              <button
-                key={f.key}
-                onClick={() => setFilterStatus(f.key)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
-                    filterStatus === f.key
-                      ? "bg-red-700 text-white shadow-sm"
-                      : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"
-                }`}
-              >
-                {f.label}
-              </button>
-            ))}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <StatCard label="Order Groups" value={stats.total} icon={FiBox} color="text-gray-600" bg="bg-gray-100" />
+          <StatCard label="Items" value={stats.totalItems} icon={FiPackage} color="text-blue-600" bg="bg-blue-100" />
+          <StatCard label="Total Spent" value={`Rs. ${stats.totalSpent.toFixed(0)}`} icon={FiGift} color="text-green-600" bg="bg-green-100" />
+          <StatCard label="Saved" value={`Rs. ${stats.totalSavings.toFixed(0)}`} icon={FiClock} color="text-amber-600" bg="bg-amber-100" />
+        </motion.div>
+        
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-8">
+          <div className="flex items-center gap-3">
+            {/* Filter buttons container with horizontal scroll on mobile */}
+            <div className="bg-white border border-gray-100 rounded-xl p-1.5 inline-flex flex-nowrap gap-1 shadow-sm overflow-x-auto overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+              {statusFilters.map((f) => (
+                <button
+                  key={f.key}
+                  onClick={() => setFilterStatus(f.key)}
+                  className={`px-4 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all flex-shrink-0 ${
+                      filterStatus === f.key
+                        ? "bg-red-700 text-white shadow-sm"
+                        : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"
+                  }`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+            {isFetching && !firstLoad && (
+              <div className="flex items-center gap-1.5 text-xs text-gray-400 whitespace-nowrap flex-shrink-0">
+                <FiLoader className="w-3.5 h-3.5 animate-spin" /> Updating...
+              </div>
+            )}
           </div>
         </motion.div>
 
-        {/* Orders list */}
         {hasOrders ? (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }} className="space-y-5">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.15 }}
+            className="grid gap-5 md:grid-cols-2"
+          >
             {groups.map((group) => (
               <OrderGroupCard key={group.groupOrderId} group={group} />
             ))}
           </motion.div>
         ) : (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center py-20">
-            <div className="w-20 h-20 rounded-2xl bg-gray-100 border border-gray-200 flex items-center justify-center mx-auto mb-4">
+            <div className="w-20 h-20 rounded-2xl bg-white border border-gray-100 flex items-center justify-center mx-auto mb-4">
               <FiPackage className="w-8 h-8 text-gray-400" />
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-1">No orders yet</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-1">No orders yet</h3>
             <p className="text-sm text-gray-400 mb-6">Start shopping to see your orders here.</p>
-            <Link to="/productlist/All">
+            <Link to="/productlist/all">
               <Button variant="red">Start Shopping <FiArrowRight className="ml-2 inline" /></Button>
             </Link>
           </motion.div>
         )}
       </div>
-    </div>
+    </main>
   )
 }
 
 function StatCard({ label, value, icon: Icon, color, bg }) {
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+    <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs text-gray-500">{label}</p>
-          <p className={`text-xl font-bold text-gray-900 mt-0.5`}>{value}</p>
+          <p className="text-xl font-bold text-gray-900 mt-0.5">{value}</p>
         </div>
         <div className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center`}>
           <Icon className={`w-5 h-5 ${color}`} />

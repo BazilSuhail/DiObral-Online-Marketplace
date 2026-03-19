@@ -1,24 +1,28 @@
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { motion } from "motion/react"
 import { useCartStore } from "../../store/cartStore"
 import { useAuthStore } from "../../store/authStore"
 import { post } from "../../api/client"
-import { FiTrash2, FiPlus, FiMinus, FiShoppingBag, FiArrowRight } from "react-icons/fi"
+import { FiTrash2, FiPlus, FiMinus, FiShoppingBag, FiArrowRight, FiCheck } from "react-icons/fi"
 import { Link } from "react-router-dom"
-import Button from "../../utilities/Button.jsx"
+import Button from "../../components/ui/Button.jsx"
 import { FaSave, FaTrashAlt } from "react-icons/fa"
+import { getCartItemPrice } from "../../lib/utils"
 
 const Separator = ({ className = "" }) => <hr className={`border-gray-200 ${className}`} />
 
 const CartItem = ({ item, onIncrease, onDecrease, onRemove, index }) => {
+  const isBundle = item.itemType === "bundle";
   const product = item.product;
-  if (!product) return null;
+  const name = isBundle ? (item.bundleName || item.bundle?.name || "Bundle") : product?.name;
+  const image = isBundle ? (item.image || item.bundle?.image) : product?.image;
+  if (!name) return null;
 
-  const price = item.price;
-  const originalPrice = product.price;
-  const isDiscounted = price < originalPrice;
-  const discountPct = isDiscounted ? Math.round((1 - price / originalPrice) * 100) : 0;
-  const savings = isDiscounted ? ((originalPrice - price) * item.quantity).toFixed(2) : 0;
+  const { originalPrice, effectivePrice, hasSale, discountPct } = getCartItemPrice(item);
+  const price = effectivePrice;
+  const savings = hasSale ? ((originalPrice - price) * item.quantity).toFixed(2) : 0;
+  const key = isBundle ? item._id : product._id;
+  const imageSrc = image ? `${import.meta.env.VITE_API_BASE_URL}/uploads/${image}` : "/placeholder.png";
 
   return (
     <motion.div
@@ -30,11 +34,11 @@ const CartItem = ({ item, onIncrease, onDecrease, onRemove, index }) => {
       <div className="flex gap-4 md:gap-6">
         <div className="relative flex-shrink-0">
           <img
-            src={`${import.meta.env.VITE_API_BASE_URL}/uploads/${product.image}`}
-            alt={product.name}
+            src={imageSrc}
+            alt={name}
             className="rounded-xl border border-gray-200 w-[110px] h-[110px] md:w-[140px] md:h-[140px] object-cover"
           />
-          {isDiscounted && (
+          {hasSale && (
             <div className="absolute top-0 left-0 bg-gradient-to-br from-red-500 to-red-600 text-white text-[10px] md:text-xs font-bold px-2 py-1 rounded-tl-xl rounded-br-xl shadow-sm">
               {discountPct}% OFF
             </div>
@@ -47,15 +51,21 @@ const CartItem = ({ item, onIncrease, onDecrease, onRemove, index }) => {
         <div className="flex-1 min-w-0 flex flex-col">
           <div className="flex justify-between items-start gap-2">
             <div className="min-w-0">
-              <h3 className="font-semibold text-gray-900 text-sm md:text-base leading-tight truncate">{product.name}</h3>
+              <h3 className="font-semibold text-gray-900 text-sm md:text-base leading-tight truncate">{name}</h3>
               <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-1 text-xs text-gray-400">
-                <span>Size: <span className="font-medium text-gray-600">{item.size}</span></span>
-                <span className="hidden md:inline text-gray-200">|</span>
-                <span>Stock: <span className={`font-medium ${product.stock > 5 ? "text-green-600" : "text-amber-600"}`}>{product.stock > 5 ? "In Stock" : product.stock > 0 ? "Low Stock" : "Out"}</span></span>
+                {isBundle ? (
+                  <span className="font-medium text-red-600">Bundle Deal</span>
+                ) : (
+                  <>
+                    <span>Size: <span className="font-medium text-gray-600">{item.size}</span></span>
+                    <span className="hidden md:inline text-gray-200">|</span>
+                    <span>Stock: <span className={`font-medium ${product.stock > 5 ? "text-green-600" : "text-amber-600"}`}>{product.stock > 5 ? "In Stock" : product.stock > 0 ? "Low Stock" : "Out"}</span></span>
+                  </>
+                )}
               </div>
             </div>
             <button
-              onClick={() => onRemove(product._id, item.size)}
+              onClick={() => onRemove(key, isBundle ? null : item.size)}
               className="text-gray-300 hover:text-red-500 transition-colors flex-shrink-0 mt-0.5"
             >
               <FiTrash2 className="w-4 h-4 md:w-5 md:h-5" />
@@ -66,14 +76,14 @@ const CartItem = ({ item, onIncrease, onDecrease, onRemove, index }) => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => onDecrease(product._id, item.size)}
+                  onClick={() => onDecrease(key, isBundle ? null : item.size)}
                   className="w-8 h-8 md:w-9 md:h-9 rounded-xl border border-gray-200 flex items-center justify-center hover:bg-gray-50 hover:border-gray-300 transition-all text-gray-500"
                 >
                   <FiMinus className="w-4 h-4" />
                 </button>
                 <span className="font-semibold text-base md:text-lg w-7 text-center tabular-nums text-gray-900">{item.quantity}</span>
                 <button
-                  onClick={() => onIncrease(product._id, item.size)}
+                  onClick={() => onIncrease(key, isBundle ? null : item.size)}
                   className="w-8 h-8 md:w-9 md:h-9 rounded-xl border border-gray-200 flex items-center justify-center hover:bg-gray-50 hover:border-gray-300 transition-all text-gray-500"
                 >
                   <FiPlus className="w-4 h-4" />
@@ -85,7 +95,7 @@ const CartItem = ({ item, onIncrease, onDecrease, onRemove, index }) => {
                   <span className="text-[11px] md:text-xs font-medium text-gray-500">Rs. </span>
                   {(price * item.quantity).toFixed(2)}
                 </div>
-                {isDiscounted ? (
+                {hasSale ? (
                   <div className="text-[11px] md:text-xs text-gray-400">
                     <span className="line-through">Rs. {originalPrice.toFixed(2)}</span>
                     <span className="text-gray-300 ml-1">/ea</span>
@@ -96,7 +106,7 @@ const CartItem = ({ item, onIncrease, onDecrease, onRemove, index }) => {
               </div>
             </div>
 
-            {isDiscounted && savings > 0 && (
+            {hasSale && savings > 0 && (
               <div className="mt-2 text-[11px] md:text-xs text-green-700 bg-green-50 border border-green-200 rounded-lg px-2.5 py-1 inline-flex items-center gap-1">
                 <FiShoppingBag className="w-3 h-3" /> You save Rs. {savings}
               </div>
@@ -114,34 +124,34 @@ export default function Cart() {
   const fetchCart = useCartStore((s) => s.fetchCart);
   const removeFromCart = useCartStore((s) => s.removeFromCart);
   const clearCart = useCartStore((s) => s.clearCart);
-  const updateQuantity = useCartStore((s) => s.updateQuantity);
+  const incrementQuantity = useCartStore((s) => s.incrementQuantity);
+  const decrementQuantity = useCartStore((s) => s.decrementQuantity);
+  const saveCart = useCartStore((s) => s.saveCart);
 
   useEffect(() => { fetchCart() }, [fetchCart])
 
-  const getQuantity = (productId, size) => {
-    const item = cart.find(c => c.product?._id === productId && c.size === size);
-    return item ? item.quantity : 1;
-  };
+  const [saveStatus, setSaveStatus] = useState(null);
 
-  const handleIncreaseQuantity = (productId, size) => updateQuantity(productId, size, getQuantity(productId, size) + 1);
-  const handleDecreaseQuantity = (productId, size) => updateQuantity(productId, size, Math.max(getQuantity(productId, size) - 1, 1));
   const handleRemoveFromCart = (productId, size) => removeFromCart(productId, size);
   const handleClearCart = () => clearCart();
+  const handleSaveCart = async () => {
+    setSaveStatus("saving");
+    try {
+      await saveCart();
+      setSaveStatus("saved");
+      setTimeout(() => setSaveStatus(null), 2000);
+    } catch (e) {
+      setSaveStatus(e.message);
+      setTimeout(() => setSaveStatus(null), 4000);
+    }
+  };
 
   const calculateTotalBill = () => {
-    return cart.reduce((total, item) => {
-      return total + (item.price || 0) * item.quantity;
-    }, 0).toFixed(2);
+    return cart.reduce((total, item) => total + getCartItemPrice(item).effectivePrice * item.quantity, 0).toFixed(2);
   };
 
   const calculateActualTotalBill = () => {
-    return cart.reduce((total, item) => {
-      return total + (item.product?.price || 0) * item.quantity;
-    }, 0).toFixed(2);
-  };
-
-  const handleSaveCart = async () => {
-    alert('Cart is already saved on the server.');
+    return cart.reduce((total, item) => total + (item.product?.price || item.price || 0) * item.quantity, 0).toFixed(2);
   };
 
   return (
@@ -167,9 +177,9 @@ export default function Cart() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center py-16">
             <FiShoppingBag className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <h2 className="text-2xl font-semibold text-gray-900 mb-2">Your cart is empty</h2>
-            <p className="text-gray-500 font-[600] max-w-[220px] mx-auto mt-6 mb-8">Looks like you haven't added anything to your cart yet.</p>
+            <p className="text-gray-500 font-[600] max-w-[220px] mx-auto mt-6 mb-8">Looks like you haven&apos;t added anything to your cart yet.</p>
             <Button variant="red">
-              <Link to="/productlist/All" className="flex items-center">Continue Shopping<FiArrowRight className="ml-2 w-4 h-4" /></Link>
+              <Link to="/productlist/all" className="flex items-center">Continue Shopping<FiArrowRight className="ml-2 w-4 h-4" /></Link>
             </Button>
           </motion.div>
         ) : (
@@ -177,10 +187,10 @@ export default function Cart() {
             <div className="flex-1 min-w-0 space-y-4">
               {cart.map((item, index) => (
                 <CartItem
-                  key={`${item.product?._id}-${item.size}`}
+                  key={item._id || `${item.product?._id}-${item.size}`}
                   item={item}
-                  onIncrease={handleIncreaseQuantity}
-                  onDecrease={handleDecreaseQuantity}
+                  onIncrease={incrementQuantity}
+                  onDecrease={decrementQuantity}
                   onRemove={handleRemoveFromCart}
                   index={index}
                 />
@@ -205,25 +215,47 @@ export default function Cart() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Shipping</span>
-                  <span className="font-medium">Rs. 200</span>
+                  <span className="font-medium">{Number(calculateTotalBill()) >= 2000 ? <span className="text-green-700">FREE</span> : "Rs. 200"}</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between text-lg font-semibold">
                   <span>Total</span>
-                  <span>Rs. {(Number(calculateTotalBill()) + 200).toFixed(2)}</span>
+                  <span>Rs. {(Number(calculateTotalBill()) + (Number(calculateTotalBill()) >= 2000 ? 0 : 200)).toFixed(2)}</span>
                 </div>
               </div>
 
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                <p className="text-sm text-blue-800">Add Rs. {(Number(calculateTotalBill()) + 100).toFixed(2)} more to get free shipping!</p>
+                {Number(calculateTotalBill()) >= 2000 ? (
+                  <p className="text-sm text-blue-800">You&apos;ve got FREE shipping on this order!</p>
+                ) : (
+                  <p className="text-sm text-blue-800">Add Rs. {(2000 - Number(calculateTotalBill())).toFixed(2)} more to get free shipping!</p>
+                )}
               </div>
 
               <div className="mb-5">
                 <label className="block text-sm font-medium text-gray-700 mb-3">Cart Options</label>
                 <div className="flex gap-2">
-                  <button onClick={handleSaveCart} className="group flex items-center justify-center py-[6px] px-[12px] rounded-[8px] text-green-50 font-[600] text-[13px] bg-green-700 hover:bg-green-800 transition-all overflow-hidden">
-                    <FaSave className="text-green-50 text-[15px] group-hover:mr-2 mb-[1px] transition-all" />
-                    <span className="hidden group-hover:inline whitespace-nowrap mb-[1px] transition-all">Save Cart</span>
+                  <button
+                    onClick={handleSaveCart}
+                    disabled={saveStatus === "saving"}
+                    className={`group flex items-center justify-center py-[6px] px-[12px] rounded-[8px] font-[600] text-[13px] transition-all overflow-hidden ${
+                      saveStatus === "saved"
+                        ? "bg-green-600 text-white"
+                        : saveStatus && saveStatus !== "saving"
+                        ? "bg-red-600 text-white"
+                        : "bg-green-700 hover:bg-green-800 text-green-50"
+                    }`}
+                  >
+                    {saveStatus === "saving" ? (
+                      <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+                    ) : saveStatus === "saved" ? (
+                      <FiCheck className="w-4 h-4" />
+                    ) : (
+                      <FaSave className="text-green-50 text-[15px] group-hover:mr-2 mb-[1px] transition-all" />
+                    )}
+                    <span className="ml-1.5">
+                      {saveStatus === "saving" ? "Saving..." : saveStatus === "saved" ? "Saved!" : saveStatus ? "Error" : "Save Cart"}
+                    </span>
                   </button>
                   <button onClick={handleClearCart} className="group flex items-center justify-center py-[6px] px-[12px] rounded-[8px] text-red-50 font-[600] text-[13px] bg-red-700 hover:bg-red-800 transition-all overflow-hidden">
                     <FaTrashAlt className="text-red-50 text-[15px] group-hover:mr-2 transition-all" />
@@ -235,7 +267,7 @@ export default function Cart() {
                 <Button className="w-full bg-red-900 hover:bg-red-800 text-white mb-4" size="lg">Proceed to Checkout</Button>
               </Link>
               <Button variant="outline" className="w-full">
-                <Link to="/productlist/All">Continue Shopping</Link>
+                <Link to="/productlist/all">Continue Shopping</Link>
               </Button>
             </motion.div>
           </div>

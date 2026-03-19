@@ -1,23 +1,29 @@
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useAuthStore } from "../../store/authStore"
 import { useCartStore } from "../../store/cartStore"
 import { post, apiCall } from "../../api/client"
 import { motion } from "motion/react"
 import { Link } from "react-router-dom"
+import { loadStripe } from "@stripe/stripe-js"
+import PaymentModal from "../../components/checkout/PaymentModal"
+import PaymentSuccessModal from "../../components/checkout/PaymentSuccessModal"
 import {
   FiCheck, FiMapPin, FiUser, FiShoppingBag, FiArrowRight,
   FiTag, FiMessageSquare, FiPhone, FiHome, FiGlobe,
   FiLoader,
 } from "react-icons/fi"
-import Button from "../../utilities/Button"
+import Button from "../../components/ui/Button"
+import { getCartItemPrice } from "../../lib/utils"
 
 const CartItem = ({ item, index }) => {
+  const isBundle = item.itemType === "bundle"
   const product = item.product
-  if (!product) return null
-  const price = item.price
-  const originalPrice = product.price
-  const isDiscounted = price < originalPrice
+  const name = isBundle ? (item.bundleName || item.bundle?.name || "Bundle") : product?.name
+  const image = isBundle ? (item.image || item.bundle?.image) : product?.image
+  if (!name) return null
+  const { originalPrice, effectivePrice, hasSale } = getCartItemPrice(item)
+  const price = effectivePrice
 
   return (
     <motion.div
@@ -27,17 +33,17 @@ const CartItem = ({ item, index }) => {
       className="flex items-center gap-3 py-3 border-b border-gray-100 last:border-0"
     >
       <img
-        src={`${import.meta.env.VITE_API_BASE_URL}/uploads/${product.image}`}
-        alt={product.name}
+        src={image ? `${import.meta.env.VITE_API_BASE_URL}/uploads/${image}` : "/placeholder.png"}
+        alt={name}
         className="rounded-lg border border-gray-200 w-14 h-14 object-cover flex-shrink-0"
       />
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-gray-900 truncate">{product.name}</p>
-        <p className="text-xs text-gray-400">Size: {item.size} &middot; Qty: {item.quantity}</p>
+        <p className="text-sm font-medium text-gray-900 truncate">{name}</p>
+        <p className="text-xs text-gray-400">{isBundle ? "Bundle Deal" : `Size: ${item.size}`} &middot; Qty: {item.quantity}</p>
       </div>
       <div className="text-right flex-shrink-0">
         <p className="text-sm font-semibold text-gray-900">Rs. {price.toFixed(2)}</p>
-        {isDiscounted && <p className="text-[10px] text-gray-400 line-through">Rs. {originalPrice.toFixed(2)}</p>}
+        {hasSale && <p className="text-[10px] text-gray-400 line-through">Rs. {originalPrice.toFixed(2)}</p>}
       </div>
     </motion.div>
   )
@@ -60,6 +66,13 @@ export default function Checkout() {
     couponCode: "",
   })
   const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState("")
+  const [showPayment, setShowPayment] = useState(false)
+  const [pendingOrder, setPendingOrder] = useState(null)
+  const [stripePromise, setStripePromise] = useState(null)
+  const [showSuccess, setShowSuccess] = useState(false)
+  const [couponState, setCouponState] = useState({ checking: false, applied: false, discount: 0, message: "" })
+  const couponDebounce = useRef(null)
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -86,16 +99,68 @@ export default function Checkout() {
 
   const set = (key, val) => setForm((f) => ({ ...f, [key]: val }))
 
-  const subtotal = cart.reduce((t, i) => t + (i.product?.price || 0) * i.quantity, 0)
-  const discount = subtotal - cart.reduce((t, i) => t + (i.price || 0) * i.quantity, 0)
-  const shipping = 200
-  const total = subtotal - discount + shipping
+  const storeGroups = useMemo(() => {
+    const map = new Map()
+    for (const item of cart) {
+      const storeId = item.store?.toString() || item.product?.store?.toString() || "unknown"
+      const { effectivePrice } = getCartItemPrice(item)
+      if (!map.has(storeId)) map.set(storeId, { storeId, subtotal: 0 })
+      map.get(storeId).subtotal += effectivePrice * item.quantity
+    }
+    return Array.from(map.values())
+  }, [cart])
+
+  const couponCode = form.couponCode.trim()
+
+  useEffect(() => {
+    clearTimeout(couponDebounce.current)
+    couponDebounce.current = setTimeout(async () => {
+      if (!couponCode) {
+        setCouponState({ checking: false, applied: false, discount: 0, message: "" })
+        return
+      }
+      let total = 0
+      let applied = false
+      let message = ""
+      for (const group of storeGroups) {
+        try {
+          const res = await apiCall("/coupons/validate", "POST", {
+            code: couponCode,
+            storeId: group.storeId,
+            orderAmount: group.subtotal,
+          })
+          if (res?.valid) {
+            total += Number(res.coupon?.discountAmount) || 0
+            applied = true
+            if (res.message) message = res.message
+          }
+        } catch (err) {
+          if (!message) message = err.response?.data?.error || "Coupon is invalid"
+        }
+      }
+      setCouponState({
+        checking: false,
+        applied,
+        discount: Math.round(total * 100) / 100,
+        message,
+      })
+    }, 400)
+    return () => clearTimeout(couponDebounce.current)
+  }, [couponCode, storeGroups])
+
+  const subtotal = cart.reduce((t, i) => t + getCartItemPrice(i).originalPrice * i.quantity, 0)
+  const discount = cart.reduce((t, i) => t + (getCartItemPrice(i).originalPrice - getCartItemPrice(i).effectivePrice) * i.quantity, 0)
+  const effectiveSubtotal = subtotal - discount
+  const shipping = effectiveSubtotal >= 2000 ? 0 : 200
+  const couponDiscount = couponState.applied ? couponState.discount : 0
+  const total = effectiveSubtotal - couponDiscount + shipping
 
   const handlePlaceOrder = async () => {
     if (!form.street || !form.city || !form.state || !form.country || !form.phone) {
-      alert("Please fill in all required shipping fields")
+      setError("Please fill in all required shipping fields")
       return
     }
+    setError("")
     setSubmitting(true)
     try {
       const res = await post("/checkout", {
@@ -109,14 +174,41 @@ export default function Checkout() {
         notes: form.notes || undefined,
         couponCode: form.couponCode || undefined,
       })
-      alert(res.message || "Order placed!")
-      clearCart()
-      navigate(`/orders-tracking`)
+      setPendingOrder(res)
+      const secrets = res.payment?.clientSecrets || []
+      if (secrets.length > 0) {
+        setStripePromise(loadStripe(res.payment.publishableKey))
+        setShowPayment(true)
+      } else {
+        const justPlaced = {
+          groupOrderId: res.groupOrderId,
+          count: res.orders?.length || 0,
+          total: res.orders?.reduce((s, o) => s + (o.total || 0), 0) || 0,
+        }
+        clearCart()
+        navigate("/orders-tracking", { state: { justPlaced } })
+      }
     } catch (err) {
-      alert(err.response?.data?.error || "Failed to place order")
+      setError(err.response?.data?.error || "Failed to place order")
     } finally {
       setSubmitting(false)
     }
+  }
+
+  const handlePaymentSuccess = () => {
+    setShowPayment(false)
+    setShowSuccess(true)
+  }
+
+  const handleCloseSuccess = () => {
+    const res = pendingOrder
+    const justPlaced = {
+      groupOrderId: res?.groupOrderId,
+      count: res?.orders?.length || 0,
+      total: res?.orders?.reduce((s, o) => s + (o.total || 0), 0) || 0,
+    }
+    clearCart()
+    navigate("/orders-tracking", { state: { justPlaced } })
   }
 
   if (!cart.length) {
@@ -126,7 +218,7 @@ export default function Checkout() {
           <FiShoppingBag className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <h2 className="text-2xl font-semibold text-gray-900 mb-2">Your cart is empty</h2>
           <p className="text-gray-500 mb-8">Add some items before checking out.</p>
-          <Link to="/productlist/All">
+          <Link to="/productlist/all">
             <Button variant="red">Continue Shopping <FiArrowRight className="ml-2 inline" /></Button>
           </Link>
         </div>
@@ -178,10 +270,26 @@ export default function Checkout() {
                   <label className="block text-sm font-medium text-gray-700 mb-1.5 flex items-center gap-1.5"><FiTag className="w-4 h-4 text-rose-500" /> Coupon Code</label>
                   <input
                     value={form.couponCode}
-                    onChange={(e) => set("couponCode", e.target.value.toUpperCase())}
+                    onChange={(e) => {
+                      const v = e.target.value
+                      set("couponCode", v.toUpperCase())
+                      if (!v.trim()) {
+                        clearTimeout(couponDebounce.current)
+                        setCouponState({ checking: false, applied: false, discount: 0, message: "" })
+                      } else {
+                        setCouponState((s) => ({ ...s, checking: true }))
+                      }
+                    }}
                     placeholder="SAVE20"
                     className="w-full h-11 rounded-xl border-2 border-gray-200 bg-white px-4 text-sm focus:outline-none focus:border-rose-400 transition-colors uppercase"
                   />
+                  {couponState.checking ? (
+                    <p className="mt-1.5 text-xs text-gray-500 flex items-center gap-1.5"><FiLoader className="w-3 h-3 animate-spin" /> Checking coupon...</p>
+                  ) : couponState.applied ? (
+                    <p className="mt-1.5 text-xs text-green-600 flex items-center gap-1.5"><FiCheck className="w-3 h-3" /> Coupon applied — saves Rs. {couponState.discount.toFixed(2)}</p>
+                  ) : couponCode && couponState.message ? (
+                    <p className="mt-1.5 text-xs text-red-600">{couponState.message}</p>
+                  ) : null}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1.5 flex items-center gap-1.5"><FiMessageSquare className="w-4 h-4 text-rose-500" /> Notes</label>
@@ -210,7 +318,7 @@ export default function Checkout() {
 
               <div className="max-h-64 overflow-y-auto mb-4 -mx-1 px-1">
                 {cart.map((item, i) => (
-                  <CartItem key={`${item.product?._id}-${item.size}`} item={item} index={i} />
+                  <CartItem key={item._id || `${item.product?._id}-${item.size}`} item={item} index={i} />
                 ))}
               </div>
 
@@ -225,9 +333,15 @@ export default function Checkout() {
                     <span>-Rs. {discount.toFixed(2)}</span>
                   </div>
                 )}
+                {couponDiscount > 0 && (
+                  <div className="flex justify-between text-green-700">
+                    <span>Coupon ({couponCode})</span>
+                    <span>-Rs. {couponDiscount.toFixed(2)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-gray-600">
                   <span>Shipping</span>
-                  <span>Rs. {shipping.toFixed(2)}</span>
+                  <span>{shipping === 0 ? <span className="text-green-700 font-medium">FREE</span> : <>Rs. {shipping.toFixed(2)}</>}</span>
                 </div>
                 <div className="border-t border-gray-200 pt-2.5 flex justify-between text-base font-bold text-gray-900">
                   <span>Total</span>
@@ -247,6 +361,12 @@ export default function Checkout() {
                 )}
               </button>
 
+              {error && (
+                <p className="mt-3 text-xs text-red-600 bg-red-50 border border-red-100 rounded-xl px-3 py-2.5">
+                  {error}
+                </p>
+              )}
+
               <Link to="/cart">
                 <button className="w-full mt-3 py-2.5 text-sm text-gray-500 hover:text-gray-700 border border-gray-200 rounded-xl transition-colors">
                   Back to Cart
@@ -256,6 +376,26 @@ export default function Checkout() {
           </div>
         </div>
       </div>
+
+      <PaymentModal
+        isOpen={showPayment}
+        onClose={() => setShowPayment(false)}
+        stripePromise={stripePromise}
+        paymentInfo={{
+          amount: pendingOrder?.orders?.reduce((s, o) => s + (o.total || 0), 0) || 0,
+          clientSecrets: pendingOrder?.payment?.clientSecrets || [],
+        }}
+        onSuccess={handlePaymentSuccess}
+      />
+      <PaymentSuccessModal
+        isOpen={showSuccess}
+        info={{
+          groupOrderId: pendingOrder?.groupOrderId,
+          count: pendingOrder?.orders?.length || 0,
+          total: pendingOrder?.orders?.reduce((s, o) => s + (o.total || 0), 0) || 0,
+        }}
+        onClose={handleCloseSuccess}
+      />
     </main>
   )
 }

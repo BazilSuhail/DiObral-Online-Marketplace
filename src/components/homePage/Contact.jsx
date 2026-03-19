@@ -2,7 +2,7 @@ import { motion } from "motion/react"
 import { FiMail, FiPhone, FiMapPin, FiUser, FiMessageCircle, FiSend, FiRefreshCw, FiTruck, FiHeadphones, FiShield } from "react-icons/fi"
 import { FaRegEnvelope } from "react-icons/fa"
 
-export default function ContactSection() {
+export default function Contact() {
   return (
     <section className="relative py-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16">
@@ -15,10 +15,10 @@ export default function ContactSection() {
   className="space-y-6"
 >
   <h2 className="text-4xl mt-4 font-bold text-gray-900">
-    Let’s <span className="text-red-600">Talk</span>
+    Let&rsquo;s <span className="text-red-600">Talk</span>
   </h2>
   <p className="text-lg text-gray-600">
-    Have questions, suggestions, or just want to say hi? We’re here to help and love hearing from you.
+    Have questions, suggestions, or just want to say hi? We&rsquo;re here to help and love hearing from you.
   </p>
 
   {/* Contact Details */}
@@ -55,7 +55,7 @@ export default function ContactSection() {
       </div>
       <div>
         <h4 className="font-semibold text-gray-800">24/7 Availability</h4>
-        <p className="text-sm text-gray-600 pr-5">Reach out anytime — we're always listening.</p>
+        <p className="text-sm text-gray-600 pr-5">Reach out anytime &mdash; we&rsquo;re always listening.</p>
       </div>
     </div>
 
@@ -75,7 +75,7 @@ export default function ContactSection() {
       </div>
       <div>
         <h4 className="font-semibold text-gray-800">Returns Made Easy</h4>
-        <p className="text-sm text-gray-600 pr-5">We simplify your return process — no stress.</p>
+        <p className="text-sm text-gray-600 pr-5">We simplify your return process &mdash; no stress.</p>
       </div>
     </div>
   </div>

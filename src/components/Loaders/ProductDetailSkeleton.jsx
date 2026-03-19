@@ -29,7 +29,7 @@ const ProductDetailSkeleton = () => {
         {/* Product Images Skeleton */}
         <div className="space-y-4">
           <motion.div
-            className="relative lg:aspect-square bg-gray-200 w-full rounded-lg overflow-hidden"
+            className="relative aspect-[4/5] bg-gray-200 w-full rounded-lg overflow-hidden"
             initial={{ opacity: 0.5 }}
             animate={{ opacity: 0.8 }}
             transition={{ 
