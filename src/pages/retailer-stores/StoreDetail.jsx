@@ -99,7 +99,6 @@ export default function StoreDetail() {
   const navigate = useNavigate()
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
 
-  const [page, setPage] = useState(1)
   const [following, setFollowing] = useState(false)
   const [reviewPage, setReviewPage] = useState(1)
 

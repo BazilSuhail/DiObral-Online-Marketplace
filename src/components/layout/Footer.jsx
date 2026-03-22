@@ -1,5 +1,5 @@
 import { motion } from "motion/react"
-import { FiMail, FiPhone, FiMapPin, FiHeart, FiShield, FiTruck, FiRefreshCw, FiHeadphones, FiSend } from "react-icons/fi"
+import { FiMail, FiPhone, FiMapPin, FiHeart, FiSend } from "react-icons/fi"
 import { FaFacebook, FaInstagram, FaTwitter, FaYoutube } from "react-icons/fa"
 import { Link } from "react-router-dom"
 
@@ -84,7 +84,7 @@ export default function Footer() {
             <div className="lg:col-span-2">
               <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="space-y-6">
                 <Link to="/" className="flex items-center">
-                  <img src="/vite.svg" alt="DiObral" className="w-[55px] h-[55px]" />
+                  <img src="/diobral.webp" alt="DiObral" className="w-[55px] h-[55px]" />
                   <span className="text-2xl font-bold ml-[8px] text-red-700">DiObral</span>
                 </Link>
                 <p className="text-gray-600 leading-relaxed max-w-md">Your destination for premium fashion and lifestyle products.</p>

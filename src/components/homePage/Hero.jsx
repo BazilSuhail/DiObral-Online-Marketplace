@@ -1,309 +1,241 @@
-import { useRef, useMemo } from 'react';
-import { motion, useMotionValue, useTransform } from "motion/react"
-import { Link } from "react-router-dom";
+import React, { useRef } from 'react';
+import { motion, useScroll, useTransform } from 'motion/react';
+import {
+  FaTruckFast,
+  FaBoxOpen,
+  FaGlobe,
+  FaRobot,
+  FaBagShopping,
+  FaWandMagicSparkles,
+  FaHeart,
+  FaTag,
+  FaGem,
+} from 'react-icons/fa6';
+import { BiShield } from 'react-icons/bi';
 
-const staggerItem = {
-  hidden: { opacity: 0, y: 12 },
-  visible: (i) => ({
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.35, delay: i * 0.04, ease: [0.25, 0.1, 0.25, 1] },
-  }),
-};
+// --- CONFIG DATA FOR REUSABILITY ---
+const METRIC_BADGES = [
+  {
+    icon: <FaTruckFast className="text-rose-600 text-xs sm:text-sm" />,
+    text: 'AI Agent · 24/7',
+    className: 'absolute top-[14%] left-3 sm:left-8 lg:left-32 -rotate-6',
+    initial: { opacity: 0, y: 15 },
+    animate: { opacity: 1, y: [0, -10, 0] },
+    transition: { opacity: { duration: 0.6, delay: 0.1 }, y: { duration: 3.5, repeat: Infinity, ease: 'easeInOut', delay: 0.1 } },
+  },
+  {
+    icon: <FaGlobe className="text-rose-600 text-xs sm:text-sm" />,
+    text: 'Free Global Ship',
+    className: 'absolute top-[4%] right-3 sm:right-8 lg:right-36 rotate-6',
+    initial: { opacity: 0, y: 15 },
+    animate: { opacity: 1, y: [0, -12, 0] },
+    transition: { opacity: { duration: 0.6, delay: 0.25 }, y: { duration: 4.2, repeat: Infinity, ease: 'easeInOut', delay: 0.8 } },
+  },
+  {
+    icon: <FaHeart className="text-rose-600 text-sm" />,
+    text: '40K+ Happy Buyers',
+    className: 'hidden lg:flex absolute top-[46%] left-24 -rotate-3',
+    initial: { opacity: 0, y: 15 },
+    animate: { opacity: 1, y: [0, 10, 0] },
+    transition: { opacity: { duration: 0.6, delay: 0.3 }, y: { duration: 3.8, repeat: Infinity, ease: 'easeInOut', delay: 0.3 } },
+  },
+  {
+    icon: <FaTag className="text-rose-600 text-sm" />,
+    text: 'New Drops Weekly',
+    className: 'hidden lg:flex absolute top-[38%] right-24 rotate-3',
+    initial: { opacity: 0, y: 15 },
+    animate: { opacity: 1, y: [0, -10, 0] },
+    transition: { opacity: { duration: 0.6, delay: 0.35 }, y: { duration: 3.6, repeat: Infinity, ease: 'easeInOut', delay: 1.0 } },
+  },
+  {
+    icon: <FaBoxOpen className="text-black text-xs sm:text-sm" />,
+    text: '1.2M+ Orders',
+    className: 'absolute bottom-[16%] left-3 sm:left-8 lg:left-24 rotate-3',
+    initial: { opacity: 0, y: 15 },
+    animate: { opacity: 1, y: [0, 12, 0] },
+    transition: { opacity: { duration: 0.6, delay: 0.4 }, y: { duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 0.5 } },
+  },
+  {
+    icon: <FaGem className="text-rose-600 text-sm" />,
+    text: 'Handcrafted',
+    className: 'hidden lg:flex absolute bottom-[16%] left-[38%] -rotate-2',
+    initial: { opacity: 0, y: 15 },
+    animate: { opacity: 1, y: [0, 8, 0] },
+    transition: { opacity: { duration: 0.6, delay: 0.45 }, y: { duration: 4.4, repeat: Infinity, ease: 'easeInOut', delay: 0.9 } },
+  },
+  {
+    icon: <BiShield className="text-black text-xs sm:text-sm" />,
+    text: 'Secure Checkout',
+    className: 'absolute bottom-[16%] right-3 sm:right-8 lg:right-24 -rotate-3',
+    initial: { opacity: 0, y: 15 },
+    animate: { opacity: 1, y: [0, 10, 0] },
+    transition: { opacity: { duration: 0.6, delay: 0.55 }, y: { duration: 3.8, repeat: Infinity, ease: 'easeInOut', delay: 1.2 } },
+  },
+];
 
-const WordReveal = ({ words, className = "" }) => (
-  <span className={className}>
-    {words.map((w, i) => (
-      <motion.span
-        key={i}
-        custom={i}
-        variants={staggerItem}
-        className="inline-block whitespace-pre"
-      >
-        {w}{" "}
-      </motion.span>
-    ))}
-  </span>
-);
-
-const TiltImage = ({ src, className, delay }) => {
-  const ref = useRef(null);
-  const x = useMotionValue(0.5);
-  const y = useMotionValue(0.5);
-  const rotateX = useTransform(y, [0, 1], [4, -4]);
-  const rotateY = useTransform(x, [0, 1], [-4, 4]);
-
-  const handleMouse = (e) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    x.set((e.clientX - rect.left) / rect.width);
-    y.set((e.clientY - rect.top) / rect.height);
-  };
-
-  const reset = () => { x.set(0.5); y.set(0.5); };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
-      onMouseMove={handleMouse}
-      onMouseLeave={reset}
-      className={className}
-    >
-      <motion.div
-        className="w-full h-full"
-        style={{ rotateX, rotateY, perspective: 800 }}
-        whileHover={{ scale: 1.08 }}
-        transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-      >
-        <img src={src} alt="" className="w-full h-full object-cover rounded-xl pointer-events-none" />
-      </motion.div>
-    </motion.div>
-  );
-};
-
-const MagneticBtn = ({ children, className, ...props }) => {
-  const ref = useRef(null);
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-
-  const handleMouse = (e) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    x.set(((e.clientX - rect.left) / rect.width - 0.5) * 8);
-    y.set(((e.clientY - rect.top) / rect.height - 0.5) * 8);
-  };
-
-  const reset = () => { x.set(0); y.set(0); };
-
-  return (
-    <motion.button
-      ref={ref}
-      onMouseMove={handleMouse}
-      onMouseLeave={reset}
-      style={{ x, y }}
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-      className={className}
-      {...props}
-    >
-      {children}
-    </motion.button>
-  );
-};
+const SHOWCASE_CARDS = [
+  {
+    src: '/home/home3.webp',
+    alt: "Men's casual shirt",
+    styleKey: 'leftOuterX',
+    className: 'absolute -ml-52 sm:-ml-56 lg:-ml-96 z-10 w-36 sm:w-48 lg:w-64 aspect-square rounded-2xl overflow-hidden shadow-xl border-2 border-rose-300 bg-gray-200 translate-y-3',
+    rotate: -8,
+    delay: 0.2,
+  },
+  {
+    src: '/home/home4.webp',
+    alt: "Men's tailored suit",
+    styleKey: 'leftInnerX',
+    className: 'absolute -ml-12 sm:-ml-28 rounded-xl overflow-hidden lg:-ml-40 z-30 w-42 sm:w-52 lg:w-72 border-4 border-rose-500',
+    rotate: -2,
+    delay: 0.3,
+    isInnerMain: true,
+  },
+  {
+    src: '/home/home1.webp',
+    alt: "Men's streetwear",
+    styleKey: 'rightInnerX',
+    className: 'absolute ml-12 sm:ml-28 lg:ml-40 z-20 w-42 sm:w-52 lg:w-72 aspect-square rounded-2xl overflow-hidden shadow-xl border-2 border-rose-300 bg-gray-200 translate-y-2',
+    rotate: 4,
+    delay: 0.4,
+  },
+  {
+    src: '/home/home2.webp',
+    alt: "Men's fashion model",
+    styleKey: 'rightOuterX',
+    className: 'absolute ml-52 sm:ml-56 lg:ml-96 z-10 w-36 sm:w-48 lg:w-64 aspect-square rounded-2xl overflow-hidden shadow-xl border-2 border-rose-300 bg-gray-200 translate-y-5',
+    rotate: 10,
+    delay: 0.5,
+  },
+];
 
 export default function Hero() {
-  const container = {
-    hidden: {},
-    visible: {
-      transition: { staggerChildren: 0.04, delayChildren: 0.15 },
-    },
+  const sectionRef = useRef(null);
+
+  // Scroll progress relative to the section
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ['start start', 'end start'],
+  });
+
+  // Scroll Transforms
+  const leftOuterX = useTransform(scrollYProgress, [0, 1], [0, -600]);
+  const rightOuterX = useTransform(scrollYProgress, [0, 1], [0, 600]);
+  const leftInnerX = useTransform(scrollYProgress, [0, 1], [0, -220]);
+  const rightInnerX = useTransform(scrollYProgress, [0, 1], [0, 220]);
+
+  const transformMap = {
+    leftOuterX,
+    rightOuterX,
+    leftInnerX,
+    rightInnerX,
   };
 
-  const line1 = useMemo(() => "A place to Everyone's".split(" "), []);
-  const line2 = useMemo(() => "Collection and Style.".split(" "), []);
-
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.6 }}
-      className="min-h-screen flex flex-col items-center justify-center text-center px-4 relative overflow-hidden"
+    <section
+      ref={sectionRef}
+      className="relative w-full h-screen text-gray-900 flex flex-col justify-center items-center px-4 overflow-hidden"
     >
-      <motion.h1
-        variants={container}
-        initial="hidden"
-        animate="visible"
-        className="md:block hidden text-4xl md:text-6xl mb-12 mt-[-50px] font-[700] text-red-800 title-poppins leading-tight"
-      >
-        <WordReveal words={line1} />
-        <br />
-        <span className="text-red-800">
-          <WordReveal words={["Collection"]} className="text-red-600" />
-          <WordReveal words={["and"]} />
-          <WordReveal words={["Style."]} className="text-red-600" />
-        </span>
-      </motion.h1>
+      {/* BACKGROUND GLOW GRADIENT */}
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] sm:w-[600px] h-[250px] sm:h-[300px] bg-rose-200/50 blur-[120px] rounded-full pointer-events-none" />
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.6, delay: 0.6 }}
-        className="md:hidden block text-[38px] space-y-[-12px] mb-8 mt-[-90px] font-[700] text-red-800 title-poppins"
-      >
-        <p className="mb-[-12px]">A place to</p>
-        <p><span className="text-red-600">Everyone's</span> Style</p>
-        <p className="mt-0.5">and <span className="text-red-600">Collection.</span></p>
-      </motion.div>
-
-      <div className="relative w-full max-w-5xl mt-12 mb-20 md:mb-2">
-        <motion.div
-          initial={{ opacity: 0, x: -15 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5, delay: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
-          className="absolute md:left-[18%] left-[7%] md:-rotate-[6deg] -rotate-[12deg] top-[-2rem] bg-red-700 text-white px-3 py-1 rounded-full text-[10px] md:text-sm font-semibold shadow-md"
-        >
-          @coplin
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, x: 15 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5, delay: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
-          className="absolute md:right-[18%] right-[7%] md:rotate-[6deg] rotate-[12deg] top-[-2rem] bg-red-200 text-red-700 px-3 py-1 rounded-full text-[10px] md:text-sm font-semibold shadow-md"
-        >
-          @andrea
-        </motion.div>
-
-        <div className="flex justify-center space-x-[-30px]">
-          <TiltImage src="/categories/1.webp" delay={0.25} className="aspect-[3/4] w-32 md:w-50 md:h-52 rounded-xl border-[2px] border-gray-300 shadow-2xl translate-y-6 rotate-[-15deg] cursor-pointer" />
-          <TiltImage src="/categories/2.webp" delay={0.30} className="aspect-[3/4] w-32 md:w-50 md:h-52 rounded-xl border-[2px] border-gray-300 shadow-2xl translate-y-5 rotate-[-6deg] cursor-pointer" />
-          <TiltImage src="/categories/4.webp" delay={0.35} className="aspect-[3/4] w-32 md:w-50 md:h-52 rounded-xl border-[2px] border-gray-300 shadow-2xl -translate-y-4 rotate-[-2deg] cursor-pointer" />
-          <TiltImage src="/categories/3.webp" delay={0.40} className="aspect-[3/4] w-32 z-10 md:w-62 md:h-65 rounded-xl border-[2px] border-gray-300 shadow-2xl md:-translate-y-12 -translate-y-6 rotate-[0deg] cursor-pointer" />
-          <TiltImage src="/categories/5.webp" delay={0.45} className="aspect-[3/4] w-32 md:w-50 md:h-52 rounded-xl border-[2px] border-gray-300 shadow-2xl -translate-y-4 rotate-[2deg] cursor-pointer" />
-          <TiltImage src="/categories/6.webp" delay={0.50} className="aspect-[3/4] w-32 md:w-50 md:h-52 rounded-xl border-[2px] border-gray-300 shadow-2xl translate-y-5 rotate-[6deg] cursor-pointer" />
-          <TiltImage src="/categories/7.webp" delay={0.55} className="aspect-[3/4] w-32 md:w-50 md:h-52 rounded-xl border-[2px] border-gray-300 shadow-2xl translate-y-6 rotate-[12deg] cursor-pointer" />
-        </div>
+      {/* --- FLOATING METRIC BADGES --- */}
+      <div className="absolute inset-0 pointer-events-none">
+        {METRIC_BADGES.map((badge, idx) => (
+          <motion.div
+            key={idx}
+            initial={badge.initial}
+            animate={badge.animate}
+            transition={badge.transition}
+            className={`absolute bg-white/90 backdrop-blur-md border border-gray-200 rounded-full px-3 sm:px-4 py-1.5 sm:py-2 flex items-center gap-1.5 sm:gap-2.5 shadow-lg ${badge.className}`}
+          >
+            {badge.icon}
+            <span className="text-[10px] sm:text-xs font-semibold text-gray-800">{badge.text}</span>
+          </motion.div>
+        ))}
       </div>
 
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.9, ease: [0.25, 0.1, 0.25, 1] }}
-        className="text-gray-600 md:w-full w-[80%] mb-6"
-      >
-        Artists can display their masterpieces, and buyers can discover and
-      </motion.p>
-
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 1.0, ease: [0.25, 0.1, 0.25, 1] }}
-        className="flex gap-4"
-      >
-        <Link to="/productlist/all">
-          <MagneticBtn className="bg-red-700 text-white px-6 py-[4px] text-[14px] md:text-[15px] md:py-2 rounded-full font-medium">
-            Shop Now
-          </MagneticBtn>
-        </Link>
-        <motion.button
-          whileHover={{ x: 4 }}
-          transition={{ duration: 0.2 }}
-          className="text-black underline font-medium"
+      {/* --- CENTER HERO CONTENT --- */}
+      <div className="relative z-10 max-w-4xl text-center -mt-35 md:-mt-25 mx-auto flex flex-col items-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="inline-flex items-center gap-1.5 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-rose-50 border border-rose-200 text-rose-600 text-[10px] sm:text-xs font-medium mb-4 sm:mb-5"
         >
-          Read more
-        </motion.button>
-      </motion.div>
-    </motion.div>
+          <FaWandMagicSparkles className="text-[10px] sm:text-xs" />
+          <span>Meet AURA - Your AI Menswear Stylist</span>
+        </motion.div>
+
+        {/* TITLE — Desktop stays single line (`whitespace-nowrap`), mobile splits nicely */}
+        <motion.h1
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: 'easeOut' }}
+          className="text-5xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.15] text-gray-900 lg:whitespace-nowrap"
+        >
+          <span className="block sm:inline">Wear Standard,</span>{' '}
+          <span className="text-rose-600 block sm:inline">Not Trend</span>
+        </motion.h1>
+
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1, ease: 'easeOut' }}
+          className="mt-3 sm:mt-4 text-gray-600 text-sm sm:text-sm md:text-base max-w-xl mx-auto leading-relaxed font-normal px-2"
+        >
+          Tailored shirts, sports and streetwear — crafted for the modern man. Plus, an AI agent inside the app that listens and places orders for you.
+        </motion.p>
+
+        {/* CTA Buttons */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2, ease: 'easeOut' }}
+          className="mt-5 sm:mt-6 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3"
+        >
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            className="w-full sm:w-auto bg-rose-600 hover:bg-rose-500 text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-full text-xs sm:text-sm font-semibold transition-all shadow-lg shadow-rose-300/50 cursor-pointer flex items-center justify-center gap-2"
+          >
+            <FaRobot className="text-sm sm:text-base" />
+            <span>Start Shopping with AI</span>
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            className="w-full sm:w-auto bg-white hover:bg-gray-100 text-gray-900 border border-gray-300 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full text-xs sm:text-sm font-semibold transition-all cursor-pointer flex items-center justify-center gap-2"
+          >
+            <FaBagShopping className="text-rose-600 text-sm sm:text-base" />
+            <span>Browse Collection</span>
+          </motion.button>
+        </motion.div>
+      </div>
+
+      {/* --- SQUARE IMAGE CARDS SHOWCASE --- */}
+      <div className="relative z-10 w-full max-w-5xl mt-8 sm:-mt-15 flex justify-center items-end flex-shrink-0">
+        <div className="relative flex items-end justify-center w-full min-h-[180px] sm:min-h-[280px] lg:min-h-[400px]">
+          {SHOWCASE_CARDS.map((card, idx) => (
+            <motion.div
+              key={idx}
+              style={{ x: transformMap[card.styleKey] }}
+              initial={{ opacity: 0, y: 60, rotate: 0 }}
+              animate={{ opacity: 1, y: 0, rotate: card.rotate }}
+              transition={{ duration: 0.8, delay: card.delay, ease: 'easeOut' }}
+              className={card.className}
+            >
+              {card.isInnerMain ? (
+                <div className="w-full h-full overflow-hidden">
+                  <img src={card.src} alt={card.alt} className="w-full h-full object-cover" />
+                </div>
+              ) : (
+                <img src={card.src} alt={card.alt} className="w-full h-full object-cover" />
+              )}
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
-
-export const Slide1 = () => {
-  return (
-    <section className="relative bg-gray-50 h-screen w-full overflow-hidden">
-      <div className="absolute inset-0 flex flex-col ">
-        <img src="/home/3.png" alt="" className="lg:scale-[1.3] scale-[1.8] lg:mt-[120px] mt-[555px] lg:ml-[695px] " />
-      </div>
-      <div className="absolute inset-0 " />
-      <div className="relative h-full w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex pt-[50px] md:pt-[80px]">
-        <div className="max-w-4xl">
-          <div className="relative  mb-8">
-            <h2 className="text-xl md:text-2xl font-bold text-gray-800">NEW ARRIVAL</h2>
-            <div className="absolute -bottom-3 left-0 h-1 w-16 bg-red-700" />
-          </div>
-          <h1 className="text-5xl md:text-7xl font-[600] leading-tight text-gray-900 mb-6">
-            <p className="font-[600] font-serif">Everyone's</p>
-            <p className="font-serif">collection <span className="text-red-500">and</span> <span className="text-white">style</span></p>
-          </h1>
-          <p className="text-lg mt-[-45px] md:mt-[65px] md:text-md font-[600] border-l-[3px] border-gray-300 pl-[15px] text-gray-500 mb-8 max-w-lg">
-            A collection of clothes with<br />
-            contemporary styles and<br />
-            trends that make you look
-          </p>
-          <motion.button
-            whileHover={{ scale: 1.05, boxShadow: "0 0 20px rgba(220,38,38,0.4)" }}
-            whileTap={{ scale: 0.95 }}
-            className="px-8 py-2 bg-red-700 text-[14px] rounded-[6px] text-white font-medium hover:bg-red-900 transition-colors duration-300"
-          >
-            Shop Now
-          </motion.button>
-          <div className="absolute right-130 top-15 w-40 h-40 rounded-full border-4 border-red-600 opacity-30" />
-          <div className="absolute right-175 top-8 w-30 h-30 rounded-full border-4 border-red-600 opacity-30" />
-          <div className="absolute right-140 top-10 w-45 h-45 rounded-full bg-red-800/30" />
-        </div>
-      </div>
-    </section>
-  );
-};
-
-export const Slide2 = () => {
-  return (
-    <section className="relative bg-gray-50 h-screen w-full overflow-hidden">
-      <div className="absolute inset-0 flex flex-col ">
-        <img src="/home/2.png" alt="" className="lg:scale-[1.4] scale-[2.2] lg:mt-[100px] mt-[555px] ml-[105px] lg:ml-[785px] " />
-      </div>
-      <div className="absolute inset-0 " />
-      <div className="relative h-full w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex  pt-[50px] md:pt-[80px]">
-        <div className="max-w-4xl">
-          <div className="ml-auto relative  mb-8">
-            <h2 className="text-xl md:text-2xl font-bold text-gray-800">NEW ARRIVAL</h2>
-            <div className="absolute -bottom-3 left-0 h-1 w-16 bg-red-700" />
-          </div>
-          <h1 className="text-5xl md:text-7xl font-[600] leading-tight text-gray-900 mb-6">
-            <p className="font-[600] font-serif">Everyone's</p>
-            <p className="font-serif">collection <span className="text-red-500">and</span> <span className="text-white">style</span></p>
-          </h1>
-          <p className="text-lg mt-[-55px] md:mt-[65px] md:text-md font-[600] border-l-[3px] border-gray-300 pl-[15px] text-gray-500 mb-8 max-w-lg">
-            A collection of clothes with<br />
-            contemporary styles and<br />
-            trends that make you look
-          </p>
-          <motion.button
-            whileHover={{ scale: 1.05, boxShadow: "0 0 20px rgba(220,38,38,0.4)" }}
-            whileTap={{ scale: 0.95 }}
-            className="px-8 py-2 bg-red-700 text-[14px] rounded-[6px] text-white font-medium hover:bg-red-900 transition-colors duration-300"
-          >
-            Shop Now
-          </motion.button>
-          <div className="absolute right-20 top-2 w-40 h-40 rounded-full border-4 border-red-600 opacity-30" />
-          <div className="absolute right-25 top-10 w-30 h-30 rounded-full bg-red-800 opacity-20" />
-        </div>
-      </div>
-    </section>
-  );
-};
-
-export const Slide3 = () => {
-  return (
-    <section className="relative bg-gray-50 h-screen w-full overflow-hidden">
-      <div className="absolute inset-0 flex flex-col ">
-        <img src="/home/4.png" alt="" className="lg:scale-[1.2] scale-[2.2] lg:mt-[150px] mt-[575px] ml-[105px] lg:ml-[585px] " />
-      </div>
-      <div className="absolute inset-0 " />
-      <div className="relative h-full w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex  pt-[50px] md:pt-[80px]">
-        <div className="max-w-4xl">
-          <div className="ml-auto relative  mb-8">
-            <h2 className="text-xl md:text-2xl font-bold text-gray-800">NEW ARRIVAL</h2>
-            <div className="absolute -bottom-3 left-0 h-1 w-16 bg-red-700" />
-          </div>
-          <h1 className="text-5xl md:text-7xl font-[600] leading-tight text-gray-900 mb-6">
-            <p className="font-[600] font-serif">Everyone's</p>
-            <p className="font-serif">collection <span className="text-red-500">and</span> <span className="text-white">style</span></p>
-          </h1>
-          <p className="text-lg mt-[-55px] md:mt-[65px] md:text-md font-[600] border-l-[3px] border-gray-300 pl-[15px] text-gray-500 mb-8 max-w-lg">
-            A collection of clothes with<br />
-            contemporary styles and<br />
-            trends that make you look
-          </p>
-          <motion.button
-            whileHover={{ scale: 1.05, boxShadow: "0 0 20px rgba(220,38,38,0.4)" }}
-            whileTap={{ scale: 0.95 }}
-            className="px-8 py-2 bg-red-700 text-[14px] rounded-[6px] text-white font-medium hover:bg-red-900 transition-colors duration-300"
-          >
-            Shop Now
-          </motion.button>
-          <div className="absolute right-20 top-2 w-40 h-40 rounded-full border-4 border-red-600 opacity-30" />
-          <div className="absolute right-25 top-10 w-30 h-30 rounded-full bg-red-800 opacity-20" />
-        </div>
-      </div>
-    </section>
-  );
-};

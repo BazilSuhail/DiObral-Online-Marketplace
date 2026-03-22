@@ -12,10 +12,9 @@ import {
   MdSafetyDivider,
   MdAccessibility,
   MdCheckroom,
-  MdHiking
 } from 'react-icons/md';
 import { BiLogInCircle } from "react-icons/bi";
-import { FiHeart, FiHome, FiInfo, FiList } from "react-icons/fi";
+import { FiHeart, FiInfo, FiList, FiPercent } from "react-icons/fi";
 import { useEffect, useState, useRef } from "react"
 import SearchModal from "../searchModal/SearchModal"
 import { Link, NavLink } from "react-router-dom"
@@ -28,25 +27,29 @@ export default function Navbar() {
   const fetchCart = useCartStore((s) => s.fetchCart);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [showNav, setShowNav] = useState(true)
   const lastScrollY = useRef(0)
 
   useEffect(() => {
     const handleScroll = () => {
       const currentY = window.scrollY
+      if (isCartOpen || isMenuOpen || isSearchModalOpen) {
+        setShowNav(true)
+        return
+      }
       setShowNav(currentY <= lastScrollY.current || currentY <= 50)
       lastScrollY.current = currentY
     }
     window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+  }, [isCartOpen, isMenuOpen, isSearchModalOpen])
 
   useEffect(() => {
     if (isAuthenticated) fetchCart()
   }, [isAuthenticated, fetchCart])
-  const [isCartOpen, setIsCartOpen] = useState(false);
   const [hoveredCategory, setHoveredCategory] = useState(false)
-  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false)
 
   const openCartModal = () => setIsCartOpen(true);
   const closeCartModal = () => setIsCartOpen(false);
@@ -85,18 +88,18 @@ export default function Navbar() {
         transition={{ duration: 0.3, ease: "easeInOut" }}
         className="md:block hidden fixed top-0 inset-x-0 z-30"
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 ">
           <div className="flex items-center justify-between h-16 md:h-20">
             <motion.div whileHover={{ scale: 1.05 }}>
               <NavLink to="/" className="h-[55px] pt-[5px] flex items-center justify-center w-full pb-[5px] overflow-hidden">
-                <img src="/vite.svg" alt="DiObral" className="w-[35px] h-[35px]" />
+                <img src="/diobral.webp" alt="DiObral" className="w-[35px] h-[35px]" />
                 <div className="flex flex-col">
                   <div className="text-red-700 ml-[4px] text-[20px] font-bold">DiObral</div>
                 </div>
               </NavLink>
             </motion.div>
 
-            <div className="flex xl:ml-[-25px] bg-white px-5 py-3 rounded-[18px] border-t-[2px] border-gray-200 shadow-lg items-center space-x-6">
+            <div className="flex xl:ml-10 bg-white px-5 py-3 rounded-[18px] border-t-[2px] border-gray-200 shadow-lg items-center space-x-6">
               {navItems.map((item, index) => (
                 <div
                   key={item.name}
@@ -267,9 +270,6 @@ export default function Navbar() {
             </div>
           </div>
         </div>
-
-        <SearchModal isOpen={isSearchModalOpen} onClose={() => setIsSearchModalOpen(false)} />
-        <CartModal isOpen={isCartOpen} onClose={closeCartModal} />
       </motion.header>
 
       <motion.header
@@ -282,7 +282,7 @@ export default function Navbar() {
           <div className="flex items-center h-[70px] justify-between px-4 py-2">
             <NavLink to="/">
               <div className="flex items-center">
-                <img src="/vite.svg" alt="DiObral" className="w-[35px] h-[35px]" />
+                <img src="/diobral.webp" alt="DiObral" className="w-[35px] h-[35px]" />
                 <div className="flex">
                   <div className="text-red-700 ml-[6px] text-[21px] font-bold">Diobral</div>
                 </div>
@@ -333,7 +333,7 @@ export default function Navbar() {
             {isMenuOpen && (
               <motion.div
                 initial={{ scaleY: 0, height: 0 }}
-                animate={{ scaleY: 1, height: "410px", transition: { duration: 0.4, ease: "easeOut" } }}
+                animate={{ scaleY: 1, height: "470px", transition: { duration: 0.4, ease: "easeOut" } }}
                 exit={{ scaleY: 0, height: 0, transition: { duration: 0.3, delay: 0.05 } }}
                 style={{ transformOrigin: "bottom right" }}
                 className="bottom-2 left-3 right-3 fixed z-[999] overflow-hidden bg-white border-2 border-gray-300 shadow-xl flex rounded-2xl flex-col px-4 py-3"
@@ -350,16 +350,16 @@ export default function Navbar() {
                     <p className="text-gray-400 pl-3">Search Products ....</p>
                   </button>
                   
-                  <div className="flex flex-col mt-8 space-y-4">
-                    <div className="flex justify-between items-center space-x-2 px-2">
-                      <NavLink to="/" onClick={handleMenuToggle} className="flex items-center text-red-700 text-[15px] font-[600] hover:text-red-800">
-                        <FiHome className="mr-2" />Home
+                  <div className="flex flex-col mt-6 space-y-4">
+                    <div className="flex justify-between items-center gap-2 px-2">
+                      <NavLink to="/productlist/all" onClick={handleMenuToggle} className="flex items-center text-red-700 text-[15px] font-[600] hover:text-red-800">
+                        <FiList className="mr-2" />Catalog
                       </NavLink>
                       <NavLink to="/about" onClick={handleMenuToggle} className="flex items-center text-red-700 text-[15px] font-[600] hover:text-red-800">
                         <FiInfo className="mr-2" />About
                       </NavLink>
-                      <NavLink to="/productlist/all" onClick={handleMenuToggle} className="flex items-center text-red-700 text-[15px] font-[600] hover:text-red-800">
-                        <FiList className="mr-2" />Catalog
+                      <NavLink to="/bundles" onClick={handleMenuToggle} className="flex items-center text-red-700 text-[15px] font-[600] hover:text-red-800">
+                        <FiPercent className="mr-2" />Bundles
                       </NavLink>
                     </div>
                     <div className="pt-5 border-t-[2px] border-gray-200">
@@ -406,16 +406,25 @@ export default function Navbar() {
                         )}
                       </div>
                     </div>
+                    <NavLink to="/bundles" onClick={handleMenuToggle}>
+                      <motion.div
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-red-700 via-red-900 to-red-700 text-white text-[13px] font-[600] py-3 rounded-xl shadow-md"
+                      >
+                        <FiPercent className="w-4 h-4" /> View Bundle Deals
+                      </motion.div>
+                    </NavLink>
                   </div>
                 </motion.div>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
-
-        <SearchModal isOpen={isSearchModalOpen} onClose={() => setIsSearchModalOpen(false)} />
-        <CartModal isOpen={isCartOpen} onClose={closeCartModal} />
       </motion.header>
+
+      <SearchModal isOpen={isSearchModalOpen} onClose={() => setIsSearchModalOpen(false)} />
+      <CartModal isOpen={isCartOpen} onClose={closeCartModal} />
     </nav>
   )
 }

@@ -99,7 +99,7 @@ export default function RegisterPage() {
   ], 30, 15, 2500);
 
   return (
-    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-white relative overflow-hidden">
+    <div className="min-h-screen -mt-21 -md:mt-20  grid grid-cols-1 lg:grid-cols-2 bg-white relative overflow-hidden">
 
       {/* Decorative Center Divider */}
       <motion.div
@@ -125,7 +125,7 @@ export default function RegisterPage() {
           transition={{ duration: 0.5 }}
           className="flex items-center gap-3"
         >
-          <img src="/logo.png" alt="DiObral" className="w-9 h-9 object-contain" />
+          <img src="/diobral.webp" alt="DiObral" className="w-9 h-9 object-contain" />
           <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">DiObral</span>
         </motion.div>
 

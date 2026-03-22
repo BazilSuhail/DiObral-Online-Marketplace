@@ -83,21 +83,34 @@ const Reveal = ({
       </div>
 
       <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.3 }}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.3 }}
+        variants={{
+          hidden: {},
+          visible: {
+            transition: {
+              staggerChildren: 0.15,
+            },
+          },
+        }}
         className="grid grid-cols-1 md:grid-cols-3 mt-16 lg:mt-24 gap-6"
       >
         {[
           { value: 40000, label: "Delighted customers trust our brand", suffix: "+", icon: "users" },
           { value: 200000, label: "Elegant fashion pieces sold worldwide", suffix: "+", icon: "tag" },
           { value: 15, label: "Years crafting timeless luxury fashion", suffix: "+", icon: "star" },
-        ].map((stat, i) => (
+        ].map((stat, _i) => (
           <motion.div
             key={stat.label}
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 + i * 0.1 }}
+            variants={{
+              hidden: { opacity: 0, y: 30 },
+              visible: {
+                opacity: 1,
+                y: 0,
+                transition: { duration: 0.6, ease: "easeOut" },
+              },
+            }}
             whileHover={{ y: -6, scale: 1.02 }}
             className="group relative bg-white rounded-2xl p-8 shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden"
           >

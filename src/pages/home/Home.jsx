@@ -17,7 +17,7 @@ import Badge from '../../components/ui/Badge.jsx';
 
 const Home = () => {
   const navigate = useNavigate();
-  const { data: products, isLoading, error } = useApiQuery("/api/home");
+  const { data: products, isLoading } = useApiQuery("/api/home");
 
   useEffect(() => { get("/").catch(() => { }) }, []);
 
@@ -27,7 +27,7 @@ const Home = () => {
       <Hero />
       <Reveal />
 
-      <section className="mb-24 mt-32 lg:mt-12">
+      <section className="my-16">
         <h3 className="text-[16px] lg:text-[20px] text-center heading-font text-red-700 font-sans font-[600]">Our Partners</h3>
         <div className="mx-auto mt-2 h-1 w-16 bg-red-700" />
         <div className="md:max-w-4xl mx-auto mt-[15px] lg:mt-16">

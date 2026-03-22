@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useEffect, useMemo, useRef, useState, useCallback } from "react"
+import { useNavigate, useLocation } from "react-router-dom"
 import { useAuthStore } from "../../store/authStore"
 import { useCartStore } from "../../store/cartStore"
 import { post, apiCall } from "../../api/client"
@@ -74,6 +74,13 @@ export default function Checkout() {
   const [couponState, setCouponState] = useState({ checking: false, applied: false, discount: 0, message: "" })
   const couponDebounce = useRef(null)
 
+  const location = useLocation()
+  const [profileLoaded, setProfileLoaded] = useState(false)
+  const autoAttempted = useRef(false)
+  const autoAlive = useRef(true)
+
+  useEffect(() => () => { autoAlive.current = false }, [])
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -92,6 +99,8 @@ export default function Checkout() {
         }))
       } catch {
         navigate("/signin")
+      } finally {
+        setProfileLoaded(true)
       }
     }
     fetchProfile()
@@ -155,7 +164,7 @@ export default function Checkout() {
   const couponDiscount = couponState.applied ? couponState.discount : 0
   const total = effectiveSubtotal - couponDiscount + shipping
 
-  const handlePlaceOrder = async () => {
+  const handlePlaceOrder = useCallback(async () => {
     if (!form.street || !form.city || !form.state || !form.country || !form.phone) {
       setError("Please fill in all required shipping fields")
       return
@@ -193,12 +202,29 @@ export default function Checkout() {
     } finally {
       setSubmitting(false)
     }
-  }
+  }, [form, clearCart, navigate])
 
   const handlePaymentSuccess = () => {
     setShowPayment(false)
     setShowSuccess(true)
   }
+
+  // Assistant "finalize / confirm order" flow: arrives with location.state { autoPlace: true }
+  const autoPlace = location.state?.autoPlace
+  useEffect(() => {
+    if (!autoPlace || autoAttempted.current) return
+    if (!cart.length || !profileLoaded) return
+    autoAttempted.current = true
+    // deferred so the page paints first and re-renders cannot cancel the attempt
+    setTimeout(() => {
+      if (!autoAlive.current) return
+      if (form.street && form.city && form.state && form.country && form.phone) {
+        handlePlaceOrder()
+      } else {
+        setError("Complete the required shipping fields to finalize your order")
+      }
+    }, 300)
+  }, [autoPlace, cart.length, profileLoaded, form.street, form.city, form.state, form.country, form.phone, handlePlaceOrder])
 
   const handleCloseSuccess = () => {
     const res = pendingOrder

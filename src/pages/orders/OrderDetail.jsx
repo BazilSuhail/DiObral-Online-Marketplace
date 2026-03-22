@@ -1,4 +1,4 @@
-import { useParams, useNavigate, Link } from "react-router-dom"
+import { useParams, Link } from "react-router-dom"
 import { motion } from "motion/react"
 import { useApiQuery } from "../../api/adapter"
 import {
@@ -20,10 +20,8 @@ const statusConfig = {
 
 export default function OrderDetail() {
   const { id } = useParams()
-  const navigate = useNavigate()
 
   const { data: order, isLoading } = useApiQuery(`/orders/${id}`, null, { enabled: !!id })
-  const { data: tracking } = useApiQuery(`/orders/${id}/track`, null, { enabled: !!id })
 
   if (isLoading) {
     return (
@@ -96,7 +94,7 @@ export default function OrderDetail() {
 
   const cfg = statusConfig[order.status?.toLowerCase()] || statusConfig.pending
   const currentStep = steps.indexOf(order.status?.toLowerCase())
-  const itemsCount = order.items?.reduce((s, i) => s + i.quantity, 0) || 0
+  const itemsCount = order.items?.reduce((s, _i) => s + _.quantity, 0) || 0
 
   return (
     <main className="min-h-screen bg-slate-50/40 text-gray-800 pb-16">

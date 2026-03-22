@@ -2,7 +2,7 @@ import { useState, useMemo } from "react"
 import { motion } from "motion/react"
 import {
   FiX, FiCheck, FiClock, FiTruck, FiPackage, FiCalendar,
-  FiGift, FiArrowRight, FiBox, FiChevronDown, FiLoader,
+  FiGift, FiArrowRight, FiBox, FiLoader,
 } from "react-icons/fi"
 import { Link, useLocation, useNavigate } from "react-router-dom"
 import { useAuthStore, parseJwt } from "../../store/authStore"

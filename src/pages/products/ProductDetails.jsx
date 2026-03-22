@@ -3,8 +3,8 @@ import { motion, AnimatePresence } from "motion/react"
 import {
   FiStar, FiShoppingBag, FiShare2, FiChevronLeft, FiChevronRight,
   FiPlus, FiMinus, FiCheck, FiHeart, FiTag, FiGrid, FiBox,
-  FiTruck, FiShield, FiRotateCcw, FiClock, FiDollarSign,
-  FiUser, FiPackage, FiArrowRight, FiX, FiMaximize2,
+  FiShield, FiRotateCcw, FiDollarSign,
+  FiPackage, FiArrowRight, FiX, FiMaximize2,
 } from "react-icons/fi"
 import { Link, useNavigate, useParams } from "react-router-dom"
 import Button from "../../components/ui/Button.jsx"
@@ -24,7 +24,6 @@ function buildImageUrl(image) {
 }
 
 const guaranteeItems = [
-  { icon: FiTruck, label: "Free Shipping", desc: "For orders over $50" },
   { icon: FiShield, label: "Secure Checkout", desc: "Protected by SSL" },
   { icon: FiRotateCcw, label: "Easy Returns", desc: "30-day return policy" },
 ]
@@ -476,7 +475,7 @@ export default function ProductDetailPage() {
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-                {related.map((rp, i) => {
+                {related.map((rp, _i) => {
                   const rPrice = rp.price ?? 0
                   const rSalePercentage = rp.sale ?? 0
                   const rHasSale = rSalePercentage > 0 && rSalePercentage < 100

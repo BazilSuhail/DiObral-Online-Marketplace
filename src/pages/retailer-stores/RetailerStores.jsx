@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "motion/react"
 import {
-  FiSearch, FiStar, FiUsers, FiPackage, FiMessageSquare,
+  FiSearch, FiStar, FiUsers, FiPackage,
   FiChevronLeft, FiChevronRight, FiHeart, FiX, FiShield,
-  FiClock, FiTrendingUp,
+  FiTrendingUp,
 } from "react-icons/fi"
 import { Link, useNavigate } from "react-router-dom"
 import { useAuthStore } from "../../store/authStore"

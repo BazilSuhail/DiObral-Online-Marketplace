@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom"
 import Home from "./pages/home/Home.jsx";
 import About from "./pages/about/About.jsx";
@@ -6,7 +7,7 @@ import ProductDetails from "./pages/products/ProductDetails.jsx";
 import Bundles from "./pages/bundles/Bundles.jsx";
 import BundleDetails from "./pages/bundles/BundleDetails.jsx";
 import Cart from "./pages/cart/Cart.jsx";
-import Checkout from "./pages/checkout/Checkout.jsx"; 
+import Checkout from "./pages/checkout/Checkout.jsx";
 import Orders from "./pages/orders/Orders.jsx";
 import OrderDetail from "./pages/orders/OrderDetail.jsx";
 import LoginPage from "./pages/auth/LoginPage.jsx";
@@ -17,14 +18,23 @@ import RetailerStores from "./pages/retailer-stores/RetailerStores.jsx";
 import StoreDetail from "./pages/retailer-stores/StoreDetail.jsx";
 import Navbar from "./components/layout/Navbar.jsx";
 import Footer from "./components/layout/Footer.jsx";
+import AssistantWidget from "./components/assistant/AssistantWidget.jsx";
+import { getPageMeta } from "./lib/routeMeta.js";
 
 const authRoutes = ["/signin", "/signup"];
 const footerRoutes = ["/", "/about"];
 
 function AppLayout() {
   const { pathname } = useLocation();
+  const { title } = getPageMeta(pathname);
+
+  useEffect(() => {
+    document.title = title;
+  }, [title]);
+
   const isAuth = authRoutes.includes(pathname);
   const showFooter = footerRoutes.includes(pathname);
+
 
   return (
     <>
@@ -51,6 +61,7 @@ function AppLayout() {
         </Routes>
       </div>
       {!isAuth && showFooter && <Footer />}
+      <AssistantWidget />
     </>
   );
 }

@@ -1,11 +1,10 @@
 import { useMemo, useEffect, useCallback, useState, useRef } from "react"
 import { motion, AnimatePresence } from "motion/react"
 import { Link, useParams, useSearchParams } from "react-router-dom"
-import { FiSearch, FiFilter, FiGrid, FiList, FiStar, FiChevronLeft, FiChevronRight, FiLoader } from "react-icons/fi"
+import { FiSearch, FiFilter, FiGrid, FiList, FiChevronLeft, FiChevronRight, FiLoader } from "react-icons/fi"
 import { useApiQuery } from "../../api/adapter"
 import { API_BASE_URL } from "../../api/client"
 import Button from "../../components/ui/Button.jsx"
-import Badge from "../../components/ui/Badge.jsx"
 
 const Input = ({ className = "", ...props }) => (
   <input className={`flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50 ${className}`} {...props} />
@@ -15,22 +14,6 @@ const Select = ({ children, value, onValueChange, className = "" }) => (
   <select value={value} onChange={(e) => onValueChange(e.target.value)} className={`flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent ${className}`}>
     {children}
   </select>
-)
-
-const Checkbox = ({ id, checked, onCheckedChange, className = "", label, labelClassName = "" }) => (
-  <div className={`flex items-center ${className}`}>
-    <div className="relative">
-      <input type="checkbox" id={id} checked={checked} onChange={(e) => onCheckedChange(e.target.checked)} className="absolute opacity-0 h-0 w-0" />
-      <div className={`flex items-center justify-center w-4 h-4 border-2 rounded ${checked ? 'border-red-400 bg-red-400' : 'border-gray-300'} transition-all duration-200`}>
-        {checked && (
-          <svg className="w-3 h-3 text-white" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-          </svg>
-        )}
-      </div>
-    </div>
-    {label && <label htmlFor={id} className={`ml-2 text-sm font-medium text-gray-700 cursor-pointer ${labelClassName}`}>{label}</label>}
-  </div>
 )
 
 const Slider = ({ value, onValueChange, min, max, step, className = "" }) => (
@@ -54,7 +37,7 @@ function buildImageUrl(image) {
 }
 
 const DEFAULT_PRICE_MIN = 1000
-const DEFAULT_PRICE_MAX = 8000
+const DEFAULT_PRICE_MAX = 3200
 const SORT_MAP = { "price-low": "price_asc", "price-high": "price_desc", rating: "rating", newest: "newest", popular: "popular" }
 
 export default function Products() {

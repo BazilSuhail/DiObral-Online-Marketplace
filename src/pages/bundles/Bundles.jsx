@@ -155,8 +155,8 @@ export default function Bundles() {
                       className="group cursor-pointer"
                     >
                       <Link to={`/bundles/${bundle._id}`}>
-                        <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all overflow-hidden border border-gray-100">
-                          <div className="relative aspect-[4/5] overflow-hidden bg-gray-50">
+                        <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all overflow-hidden border border-gray-100 h-94 sm:h-auto flex flex-col">
+                          <div className="relative aspect-4/5 overflow-hidden bg-gray-50 shrink-0">
                             <img src={buildImageUrl(bundle.image)} alt={bundle.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                             {bundle.youSavePercent > 0 && (
                               <div className="absolute top-2 left-2 bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow-sm flex items-center gap-1">
@@ -167,24 +167,26 @@ export default function Bundles() {
                               <FiPackage className="w-3 h-3" /> {bundle.items?.length || 0} items
                             </div>
                           </div>
-                          <div className="p-3 space-y-1">
-                            <h3 className="font-semibold text-gray-900 text-sm leading-snug line-clamp-2" title={bundle.name}>{limitText(bundle.name, 40)}</h3>
-                            <p className="text-[11px] text-gray-400 truncate">{bundle.store?.storeName || ""}</p>
-                            {(() => {
-                              const tags = normalizeTags(bundle.tags)
-                              if (!tags.length) return null
-                              const shown = tags.slice(0, 3)
-                              const extra = tags.length - shown.length
-                              return (
-                                <div className="flex flex-wrap items-center gap-1 pt-0.5">
-                                  {shown.map((tag) => (
-                                    <span key={tag} className="text-[9px] font-semibold text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-full truncate max-w-[90px]">{tag}</span>
-                                  ))}
-                                  {extra > 0 && <span className="text-[9px] font-bold text-red-600">+{extra}</span>}
-                                </div>
-                              )
-                            })()}
-                            <div className="flex items-center gap-1.5">
+                          <div className="p-3 flex-1 flex flex-col justify-between">
+                            <div className="space-y-1">
+                              <h3 className="font-semibold text-gray-900 text-[11px] sm:text-sm md:text-[15px] leading-snug line-clamp-2" title={bundle.name}>{limitText(bundle.name, 32)}</h3>
+                              <p className="text-[11px] text-gray-400 truncate">{bundle.store?.storeName || ""}</p>
+                              {(() => {
+                                const tags = normalizeTags(bundle.tags)
+                                if (!tags.length) return null
+                                const shown = tags.slice(0, 3)
+                                const extra = tags.length - shown.length
+                                return (
+                                  <div className="flex flex-wrap items-center gap-1 pt-0.5">
+                                    {shown.map((tag) => (
+                                      <span key={tag} className="text-[9px] font-semibold text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-full truncate max-w-[90px]">{tag}</span>
+                                    ))}
+                                    {extra > 0 && <span className="text-[9px] font-bold text-red-600">+{extra}</span>}
+                                  </div>
+                                )
+                              })()}
+                            </div>
+                            <div className="flex items-center mt-auto gap-1.5 pt-2">
                               <span className="text-base font-bold text-gray-900">${bundle.price?.toFixed(2)}</span>
                               {bundle.originalTotal > bundle.price && (
                                 <span className="text-xs text-gray-400 line-through">${bundle.originalTotal.toFixed(2)}</span>
