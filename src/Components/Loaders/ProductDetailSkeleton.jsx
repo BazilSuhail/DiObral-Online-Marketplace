@@ -1,357 +1,116 @@
-import { motion } from "motion/react"
+const Block = ({ className = "" }) => <div className={`soft-skeleton ${className}`} />
+
+const Card = ({ children, className = "" }) => (
+  <div className={`soft-card rounded-3xl p-5 sm:p-7 ${className}`}>{children}</div>
+)
 
 const ProductDetailSkeleton = () => {
   return (
-    <main className="min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12 pt-4">
-      {/* Breadcrumb Skeleton */}
-      <section className="mb-4">
-        <div className="flex items-center space-x-2 text-sm">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="flex items-center space-x-2">
-              <motion.div
-                className="h-4 w-16 bg-gray-200 rounded"
-                initial={{ opacity: 0.5 }}
-                animate={{ opacity: 0.8 }}
-                transition={{ 
-                  repeat: Infinity, 
-                  duration: 1, 
-                  repeatType: "reverse",
-                  delay: i * 0.1
-                }}
-              />
-              {i < 2 && <div className="h-4 w-2 bg-gray-200 rounded" />}
-            </div>
-          ))}
+    <main className="soft-page" aria-busy="true" aria-label="Loading product">
+      <div className="mx-auto max-w-7xl px-4 py-5 pb-28 sm:px-6 lg:px-8 lg:py-8">
+        {/* Breadcrumb */}
+        <div className="mb-4 flex items-center gap-2 lg:mb-6">
+          <Block className="h-4 w-14" />
+          <Block className="h-4 w-16" />
+          <Block className="h-4 w-24" />
+          <Block className="h-4 w-32" />
         </div>
-      </section>
 
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-        {/* Product Images Skeleton */}
-        <div className="space-y-4">
-          <motion.div
-            className="relative aspect-[4/5] bg-gray-200 w-full rounded-lg overflow-hidden"
-            initial={{ opacity: 0.5 }}
-            animate={{ opacity: 0.8 }}
-            transition={{ 
-              repeat: Infinity, 
-              duration: 1, 
-              repeatType: "reverse"
-            }}
-          >
-            {/* Navigation buttons placeholder */}
-            <div className="absolute left-4 top-1/2 transform -translate-y-1/2 w-10 h-10 bg-gray-300 rounded-full"></div>
-            <div className="absolute right-4 top-1/2 transform -translate-y-1/2 w-10 h-10 bg-gray-300 rounded-full"></div>
-          </motion.div>
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12 lg:gap-10">
+          {/* Gallery */}
+          <div className="-mx-4 sm:-mx-6 lg:col-span-7 lg:mx-0">
+            <div className="flex gap-4">
+              <div className="hidden w-20 shrink-0 flex-col gap-3 lg:flex">
+                {[...Array(5)].map((_, i) => (
+                  <Block key={i} className="aspect-4/5 w-full !rounded-2xl" />
+                ))}
+              </div>
+              <div className="min-w-0 flex-1">
+                <Block className="aspect-4/5 w-full !rounded-b-3xl !rounded-t-none lg:!rounded-3xl" />
+                <div className="mt-3 flex justify-center gap-1.5 lg:hidden">
+                  {[...Array(4)].map((_, i) => (
+                    <Block key={i} className="h-1.5 w-1.5 !rounded-full" />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
 
-          {/* Thumbnail Images Skeleton */}
-          <div className="flex space-x-2">
-            {[...Array(4)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="flex-shrink-0 w-20 h-20 rounded-lg bg-gray-200 border-2 border-gray-200"
-                initial={{ opacity: 0.5 }}
-                animate={{ opacity: 0.8 }}
-                transition={{ 
-                  repeat: Infinity, 
-                  duration: 1, 
-                  repeatType: "reverse",
-                  delay: i * 0.1
-                }}
-              />
-            ))}
+          {/* Right column */}
+          <div className="flex flex-col gap-5 lg:col-span-5">
+            <Card className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Block className="h-7 w-28 !rounded-full" />
+                <Block className="h-4 w-20" />
+              </div>
+              <Block className="h-8 w-4/5" />
+              <Block className="h-4 w-48" />
+              <Block className="h-9 w-40" />
+              <div className="space-y-2">
+                <Block className="h-4 w-full" />
+                <Block className="h-4 w-full" />
+                <Block className="h-4 w-2/3" />
+              </div>
+            </Card>
+
+            <Card className="space-y-5">
+              <Block className="h-4 w-24" />
+              <div className="flex flex-wrap gap-2">
+                {[...Array(5)].map((_, i) => (
+                  <Block key={i} className="h-12 w-12 !rounded-2xl" />
+                ))}
+              </div>
+              <div className="flex gap-3">
+                <Block className="h-14 w-32 !rounded-2xl" />
+                <Block className="h-14 flex-1 !rounded-2xl" />
+              </div>
+              <Block className="h-16 w-full !rounded-2xl" />
+              <Block className="h-4 w-56" />
+            </Card>
+
+            <Card>
+              <div className="flex items-center gap-4">
+                <Block className="h-12 w-12 !rounded-2xl" />
+                <div className="flex-1 space-y-2">
+                  <Block className="h-3 w-16" />
+                  <Block className="h-4 w-32" />
+                </div>
+                <Block className="h-10 w-28 !rounded-2xl" />
+              </div>
+            </Card>
+
+            <Card>
+              <div className="grid grid-cols-3 gap-4">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="flex flex-col items-center gap-2">
+                    <Block className="h-8 w-8 !rounded-full sm:h-10 sm:w-10" />
+                    <Block className="h-3 w-full" />
+                  </div>
+                ))}
+              </div>
+            </Card>
           </div>
         </div>
 
-        {/* Product Details Skeleton */}
-        <div className="space-y-6">
-          <motion.div
-            className="space-y-6"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            {/* Badges */}
-            <div className="flex gap-2">
-              <motion.div 
-                className="h-6 w-16 bg-gray-200 rounded"
-                initial={{ opacity: 0.5 }}
-                animate={{ opacity: 0.8 }}
-                transition={{ 
-                  repeat: Infinity, 
-                  duration: 1, 
-                  repeatType: "reverse"
-                }}
-              />
-              <motion.div 
-                className="h-6 w-16 bg-gray-200 rounded"
-                initial={{ opacity: 0.5 }}
-                animate={{ opacity: 0.8 }}
-                transition={{ 
-                  repeat: Infinity, 
-                  duration: 1, 
-                  repeatType: "reverse",
-                  delay: 0.2
-                }}
-              />
-            </div>
-
-            {/* Title */}
-            <motion.div 
-              className="h-8 w-3/4 bg-gray-200 rounded"
-              initial={{ opacity: 0.5 }}
-              animate={{ opacity: 0.8 }}
-              transition={{ 
-                repeat: Infinity, 
-                duration: 1, 
-                repeatType: "reverse",
-                delay: 0.1
-              }}
-            />
-
-            {/* Rating */}
-            <div className="flex items-center gap-4">
-              <div className="flex">
-                {[...Array(5)].map((_, i) => (
-                  <motion.div
-                    key={i}
-                    className="w-5 h-5 bg-gray-200 rounded mr-1"
-                    initial={{ opacity: 0.5 }}
-                    animate={{ opacity: 0.8 }}
-                    transition={{ 
-                      repeat: Infinity, 
-                      duration: 1, 
-                      repeatType: "reverse",
-                      delay: i * 0.1
-                    }}
-                  />
-                ))}
-              </div>
-              <motion.div 
-                className="h-4 w-16 bg-gray-200 rounded"
-                initial={{ opacity: 0.5 }}
-                animate={{ opacity: 0.8 }}
-                transition={{ 
-                  repeat: Infinity, 
-                  duration: 1, 
-                  repeatType: "reverse",
-                  delay: 0.3
-                }}
-              />
-            </div>
-
-            {/* Price */}
-            <div className="flex items-center space-x-3">
-              <motion.div 
-                className="h-8 w-24 bg-gray-200 rounded"
-                initial={{ opacity: 0.5 }}
-                animate={{ opacity: 0.8 }}
-                transition={{ 
-                  repeat: Infinity, 
-                  duration: 1, 
-                  repeatType: "reverse",
-                  delay: 0.1
-                }}
-              />
-              <motion.div 
-                className="h-6 w-20 bg-gray-200 rounded"
-                initial={{ opacity: 0.5 }}
-                animate={{ opacity: 0.8 }}
-                transition={{ 
-                  repeat: Infinity, 
-                  duration: 1, 
-                  repeatType: "reverse",
-                  delay: 0.2
-                }}
-              />
-            </div>
-
-            {/* Description */}
-            <div className="space-y-2">
-              {[...Array(4)].map((_, i) => (
-                <motion.div
-                  key={i}
-                  className={`h-4 bg-gray-200 rounded ${i === 3 ? 'w-2/3' : 'w-full'}`}
-                  initial={{ opacity: 0.5 }}
-                  animate={{ opacity: 0.8 }}
-                  transition={{ 
-                    repeat: Infinity, 
-                    duration: 1, 
-                    repeatType: "reverse",
-                    delay: i * 0.1
-                  }}
-                />
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Product Options Skeleton */}
-          <motion.div
-            className="space-y-6"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            {/* Size Selection */}
-            <div>
-              <motion.div 
-                className="h-5 w-16 bg-gray-200 rounded mb-3"
-                initial={{ opacity: 0.5 }}
-                animate={{ opacity: 0.8 }}
-                transition={{ 
-                  repeat: Infinity, 
-                  duration: 1, 
-                  repeatType: "reverse"
-                }}
-              />
-              <motion.div 
-                className="w-full h-10 bg-gray-200 rounded"
-                initial={{ opacity: 0.5 }}
-                animate={{ opacity: 0.8 }}
-                transition={{ 
-                  repeat: Infinity, 
-                  duration: 1, 
-                  repeatType: "reverse",
-                  delay: 0.1
-                }}
-              />
-            </div>
-
-            {/* Quantity */}
-            <div>
-              <motion.div 
-                className="h-5 w-16 bg-gray-200 rounded mb-3"
-                initial={{ opacity: 0.5 }}
-                animate={{ opacity: 0.8 }}
-                transition={{ 
-                  repeat: Infinity, 
-                  duration: 1, 
-                  repeatType: "reverse"
-                }}
-              />
-              <div className="flex items-center space-x-3">
-                <motion.div 
-                  className="w-10 h-10 bg-gray-200 rounded-full"
-                  initial={{ opacity: 0.5 }}
-                  animate={{ opacity: 0.8 }}
-                  transition={{ 
-                    repeat: Infinity, 
-                    duration: 1, 
-                    repeatType: "reverse",
-                    delay: 0.1
-                  }}
-                />
-                <motion.div 
-                  className="w-8 h-10 bg-gray-200 rounded"
-                  initial={{ opacity: 0.5 }}
-                  animate={{ opacity: 0.8 }}
-                  transition={{ 
-                    repeat: Infinity, 
-                    duration: 1, 
-                    repeatType: "reverse",
-                    delay: 0.2
-                  }}
-                />
-                <motion.div 
-                  className="w-10 h-10 bg-gray-200 rounded-full"
-                  initial={{ opacity: 0.5 }}
-                  animate={{ opacity: 0.8 }}
-                  transition={{ 
-                    repeat: Infinity, 
-                    duration: 1, 
-                    repeatType: "reverse",
-                    delay: 0.3
-                  }}
-                />
-              </div>
-              <motion.div 
-                className="h-4 w-32 bg-gray-200 rounded mt-2"
-                initial={{ opacity: 0.5 }}
-                animate={{ opacity: 0.8 }}
-                transition={{ 
-                  repeat: Infinity, 
-                  duration: 1, 
-                  repeatType: "reverse",
-                  delay: 0.2
-                }}
-              />
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex gap-4">
-              <motion.div 
-                className="w-[280px] h-12 bg-gray-200 rounded"
-                initial={{ opacity: 0.5 }}
-                animate={{ opacity: 0.8 }}
-                transition={{ 
-                  repeat: Infinity, 
-                  duration: 1, 
-                  repeatType: "reverse",
-                  delay: 0.1
-                }}
-              />
-              <motion.div 
-                className="w-12 h-12 bg-gray-200 rounded"
-                initial={{ opacity: 0.5 }}
-                animate={{ opacity: 0.8 }}
-                transition={{ 
-                  repeat: Infinity, 
-                  duration: 1, 
-                  repeatType: "reverse",
-                  delay: 0.2
-                }}
-              />
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Reviews Section Skeleton */}
-      <div className="mt-12 space-y-6">
-        <motion.div 
-          className="h-8 w-48 bg-gray-200 rounded"
-          initial={{ opacity: 0.5 }}
-          animate={{ opacity: 0.8 }}
-          transition={{ 
-            repeat: Infinity, 
-            duration: 1, 
-            repeatType: "reverse"
-          }}
-        />
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {[...Array(4)].map((_, i) => (
-            <motion.div
-              key={i}
-              className="p-4 bg-white rounded-lg border border-gray-200"
-              initial={{ opacity: 0.5 }}
-              animate={{ opacity: 0.8 }}
-              transition={{ 
-                repeat: Infinity, 
-                duration: 1, 
-                repeatType: "reverse",
-                delay: i * 0.1
-              }}
-            >
-              <div className="flex items-center space-x-3 mb-3">
-                <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
-                <div className="space-y-1">
-                  <div className="h-4 w-32 bg-gray-200 rounded"></div>
-                  <div className="h-3 w-24 bg-gray-200 rounded"></div>
+        {/* Reviews */}
+        <Card className="mt-8 space-y-5 lg:mt-10">
+          <Block className="h-7 w-56" />
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            {[...Array(2)].map((_, i) => (
+              <div key={i} className="soft-card-inset space-y-3 rounded-2xl p-4">
+                <div className="flex items-center gap-3">
+                  <Block className="h-10 w-10 !rounded-full" />
+                  <div className="space-y-1.5">
+                    <Block className="h-4 w-32" />
+                    <Block className="h-3 w-24" />
+                  </div>
                 </div>
+                <Block className="h-3 w-full" />
+                <Block className="h-3 w-4/5" />
               </div>
-              <div className="flex mb-3">
-                {[...Array(5)].map((_, j) => (
-                  <div key={j} className="w-4 h-4 bg-gray-200 rounded mr-1"></div>
-                ))}
-              </div>
-              <div className="space-y-2">
-                <div className="h-3 w-full bg-gray-200 rounded"></div>
-                <div className="h-3 w-4/5 bg-gray-200 rounded"></div>
-                <div className="h-3 w-3/5 bg-gray-200 rounded"></div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+            ))}
+          </div>
+        </Card>
       </div>
     </main>
   )

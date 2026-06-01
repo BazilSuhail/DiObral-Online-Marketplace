@@ -1,24 +1,25 @@
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom"
 import Home from "./pages/home/Home.jsx";
-import About from "./pages/about/About.jsx";
-import Products from "./pages/products/Products.jsx";
-import ProductDetails from "./pages/products/ProductDetails.jsx";
-import Bundles from "./pages/bundles/Bundles.jsx";
-import BundleDetails from "./pages/bundles/BundleDetails.jsx";
-import Cart from "./pages/cart/Cart.jsx";
-import Checkout from "./pages/checkout/Checkout.jsx";
-import Orders from "./pages/orders/Orders.jsx";
-import OrderDetail from "./pages/orders/OrderDetail.jsx";
-import LoginPage from "./pages/auth/LoginPage.jsx";
-import RegisterPage from "./pages/auth/RegisterPage.jsx";
-import Profile from "./pages/profile/Profile.jsx";
-import Wishlist from "./pages/wishlist/Wishlist.jsx";
-import RetailerStores from "./pages/retailer-stores/RetailerStores.jsx";
-import StoreDetail from "./pages/retailer-stores/StoreDetail.jsx";
+const About = lazy(() => import("./pages/about/About.jsx"));
+const Products = lazy(() => import("./pages/products/Products.jsx"));
+const ProductDetails = lazy(() => import("./pages/products/ProductDetails.jsx"));
+const Bundles = lazy(() => import("./pages/bundles/Bundles.jsx"));
+const BundleDetails = lazy(() => import("./pages/bundles/BundleDetails.jsx"));
+const Cart = lazy(() => import("./pages/cart/Cart.jsx"));
+const Checkout = lazy(() => import("./pages/checkout/Checkout.jsx"));
+const Orders = lazy(() => import("./pages/orders/Orders.jsx"));
+const OrderDetail = lazy(() => import("./pages/orders/OrderDetail.jsx"));
+const LoginPage = lazy(() => import("./pages/auth/LoginPage.jsx"));
+const RegisterPage = lazy(() => import("./pages/auth/RegisterPage.jsx"));
+const Profile = lazy(() => import("./pages/profile/Profile.jsx"));
+const Wishlist = lazy(() => import("./pages/wishlist/Wishlist.jsx"));
+const RetailerStores = lazy(() => import("./pages/retailer-stores/RetailerStores.jsx"));
+const StoreDetail = lazy(() => import("./pages/retailer-stores/StoreDetail.jsx"));
 import Navbar from "./components/layout/Navbar.jsx";
 import Footer from "./components/layout/Footer.jsx";
-import AssistantWidget from "./components/assistant/AssistantWidget.jsx";
+import AssistantDock from "./components/assistant/AssistantDock.jsx";
+import MainLoader from "./components/loaders/mainLoader.jsx";
 import { getPageMeta } from "./lib/routeMeta.js";
 
 const authRoutes = ["/signin", "/signup"];
@@ -40,6 +41,7 @@ function AppLayout() {
     <>
       {!isAuth && <Navbar />}
       <div className="pt-21 md:pt-20">
+        <Suspense fallback={<MainLoader />}>
         <Routes>
           <Route exact path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
@@ -59,9 +61,10 @@ function AppLayout() {
           <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/search" element={<Navigate to="/productlist/all" replace />} />
         </Routes>
+        </Suspense>
       </div>
       {!isAuth && showFooter && <Footer />}
-      <AssistantWidget />
+      <AssistantDock />
     </>
   );
 }

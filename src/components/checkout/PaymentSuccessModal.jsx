@@ -41,7 +41,7 @@ export default function PaymentSuccessModal({ isOpen, info, onClose }) {
             className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden"
           >
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-              <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                 <span className="w-8 h-8 rounded-xl bg-green-100 text-green-600 flex items-center justify-center">
                   <FiCheck className="w-4 h-4" />
                 </span>

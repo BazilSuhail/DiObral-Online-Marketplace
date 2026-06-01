@@ -172,7 +172,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: 'easeOut' }}
-          className="text-5xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.15] text-gray-900 lg:whitespace-nowrap"
+          className="text-4xl sm:text-5xl lg:text-6xl font-semibold tracking-tight leading-[1.15] text-gray-900 lg:whitespace-nowrap"
         >
           <span className="block sm:inline">Wear Standard,</span>{' '}
           <span className="text-rose-600 block sm:inline">Not Trend</span>

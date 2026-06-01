@@ -72,7 +72,7 @@ const CartItem = ({ item, onIncrease, onDecrease, onRemove, index }) => {
             className="rounded-lg border border-gray-200 w-[72px] h-[72px] object-cover"
           />
           {hasSale && (
-            <div className="absolute top-0 left-0 bg-gradient-to-br from-red-500 to-red-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-tl-lg rounded-br-md">
+            <div className="absolute top-0 left-0 bg-gradient-to-br from-red-500 to-red-600 text-white text-[9px] font-semibold px-1.5 py-0.5 rounded-tl-lg rounded-br-md">
               {discountPct}%
             </div>
           )}
@@ -91,7 +91,7 @@ const CartItem = ({ item, onIncrease, onDecrease, onRemove, index }) => {
             </button>
           </div>
 
-          <div className="flex items-center gap-2 text-[11px] text-gray-400 mt-0.5">
+          <div className="flex items-center gap-2 text-[11px] text-gray-400 mt-0.5 flex-wrap">
             {isBundle ? (
               <span className="font-medium text-red-600">Bundle Deal</span>
             ) : (
@@ -115,7 +115,7 @@ const CartItem = ({ item, onIncrease, onDecrease, onRemove, index }) => {
             </div>
 
             <div className="text-right">
-              <div className="font-bold text-gray-900 text-[13px]">
+              <div className="font-semibold text-gray-900 text-[13px] whitespace-nowrap">
                 Rs. {(price * item.quantity).toFixed(2)}
               </div>
               <div className="text-[10px] text-gray-400">
@@ -201,7 +201,7 @@ const CartModal = ({ isOpen, onClose }) => {
               >
                 <div className="pb-3 border-b border-gray-200">
                   <div className="flex justify-between items-center mb-1">
-                    <h2 className="text-lg font-bold">Your Cart</h2>
+                    <h2 className="text-lg font-semibold">Your Cart</h2>
                     <button onClick={onClose} className="text-gray-500 hover:text-black text-[28px] mt-[-5px]">&times;</button>
                   </div>
                 </div>
@@ -238,7 +238,7 @@ const CartModal = ({ isOpen, onClose }) => {
                     disabled={cart.length === 0}
                   >
                     <FiShoppingCart className="w-5 h-5" />
-                    <span>Go to Cart</span>
+                    <span className="font-medium">Go to Cart</span>
                   </button>
                 </Link>
               </motion.div>

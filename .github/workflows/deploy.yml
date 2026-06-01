@@ -11,24 +11,22 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Set up Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Install dependencies
-        run: npm install
+        run: bun install --frozen-lockfile
 
       - name: Build project
-        run: npm run build
+        run: bun run build
         
       - name: Copy netlify.toml to dist folder
         run: cp netlify.toml dist/
 
       - name: Install Netlify CLI
-        run: npm install -g netlify-cli
+        run: bun add -g netlify-cli
 
       - name: Deploy to Netlify
         run: netlify deploy --dir=dist --prod --site=$NETLIFY_SITE_ID --auth=$NETLIFY_AUTH_TOKEN

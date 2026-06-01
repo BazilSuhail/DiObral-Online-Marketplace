@@ -63,7 +63,7 @@ export default function StripePayment({ paymentInfo, onSuccess }) {
     <div className="rounded-2xl border-2 border-rose-100 bg-rose-50/40 p-5">
       <div className="flex items-start justify-between gap-3 mb-4">
         <div>
-          <h3 className="text-sm font-bold text-gray-900 flex items-center gap-1.5">
+          <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-1.5">
             <span className="w-8 h-8 rounded-xl bg-rose-600 text-white flex items-center justify-center flex-shrink-0">
               <FiCreditCard className="w-4 h-4" />
             </span>
@@ -75,8 +75,8 @@ export default function StripePayment({ paymentInfo, onSuccess }) {
           </p>
         </div>
         <div className="text-right flex-shrink-0">
-          <p className="text-[10px] uppercase tracking-wide text-gray-400">Amount due</p>
-          <p className="text-lg font-bold text-gray-900">Rs. {paymentInfo?.amount?.toFixed(2)}</p>
+          <p className="text-[10px] uppercase tracking-normal text-gray-400">Amount due</p>
+          <p className="text-lg font-semibold text-gray-900">Rs. {paymentInfo?.amount?.toFixed(2)}</p>
         </div>
       </div>
 

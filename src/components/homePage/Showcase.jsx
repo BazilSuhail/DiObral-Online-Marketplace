@@ -157,7 +157,7 @@ const TiltCard = ({ item, index }) => {
               />
             </svg>
             <motion.h2
-              className="text-2xl md:text-4xl text-white font-bold mb-4 relative"
+              className="text-2xl md:text-4xl text-white font-semibold mb-4 relative"
               initial={{ y: 20, opacity: 0 }}
               animate={isInView ? { y: 0, opacity: 1 } : {}}
               transition={{ duration: 0.6, delay: 0.4 }}
@@ -244,7 +244,7 @@ const TiltCard = ({ item, index }) => {
           className="flex items-end justify-between"
         >
           <div>
-            <h3 className="font-bold text-white text-lg drop-shadow-sm">{item.title}</h3>
+            <h3 className="font-semibold text-white text-lg drop-shadow-sm">{item.title}</h3>
             <p className="text-white/80 text-sm mt-0.5">{item.price}</p>
           </div>
           <motion.button
@@ -291,7 +291,7 @@ export const Gallery = () => {
           transition={{ duration: 0.5 }}
           className="text-center mb-12"
         >
-          <h2 className="text-3xl lg:text-5xl font-bold text-gray-900">
+          <h2 className="text-3xl lg:text-5xl font-semibold text-gray-900">
             Featured <span className="text-red-600">Collection</span>
           </h2>
           <p className="text-gray-500 mt-3 max-w-xl mx-auto">Discover our handpicked selection of premium fashion pieces.</p>
@@ -320,8 +320,8 @@ export const Reviews = () => (
                   <div className='flex items-center'>
                     <BiCheckCircle className="text-red-300 mr-[15px] text-[45px]" />
                     <div className='flex flex-col'>
-                      <p className="font-bold">{review.name}</p>
-                      <p className="text-sm text-gray-600">{review.email}</p>
+                      <p className="font-semibold text-gray-900">{review.name}</p>
+                      <p className="text-sm font-normal text-gray-500">{review.email}</p>
                     </div>
                   </div>
 
@@ -356,8 +356,8 @@ export const Reviews = () => (
                   <div className='flex items-center'>
                     <BiCheckCircle className="text-red-300 mr-[15px] text-[45px]" />
                     <div className='flex flex-col'>
-                      <p className="font-bold">{review.name}</p>
-                      <p className="text-sm text-gray-600">{review.email}</p>
+                      <p className="font-semibold text-gray-900">{review.name}</p>
+                      <p className="text-sm font-normal text-gray-500">{review.email}</p>
                     </div>
                   </div>
 

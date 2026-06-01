@@ -1,21 +1,31 @@
-import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "motion/react"
+import { useState, useEffect, useRef } from "react"
+import { motion, AnimatePresence, useReducedMotion } from "motion/react"
 import {
-  FiStar, FiShoppingBag, FiShare2, FiChevronLeft, FiChevronRight,
-  FiPlus, FiMinus, FiCheck, FiHeart, FiTag, FiGrid, FiBox,
-  FiShield, FiRotateCcw, FiDollarSign,
-  FiPackage, FiArrowRight, FiX, FiMaximize2,
+  FiHome, FiChevronRight, FiTag, FiCheck, FiX, FiMaximize2,
+  FiArrowLeft, FiRefreshCw, FiMessageSquare,
 } from "react-icons/fi"
 import { Link, useNavigate, useParams } from "react-router-dom"
-import Button from "../../components/ui/Button.jsx"
 import { useAuthStore } from "../../store/authStore"
-import { useCartStore } from "../../store/cartStore"
 import { useWishlistStore } from "../../store/wishlistStore"
 import { useApiQuery } from "../../api/adapter"
 import { API_BASE_URL } from "../../api/client"
 import ReviewSection from "../../components/productReview/ProductReview"
 import ProductDetailSkeleton from "../../components/loaders/ProductDetailSkeleton"
-import { FaStore } from "react-icons/fa6"
+import NotFound from "../../components/illustrations/NotFound"
+import ErrorState from "../../components/illustrations/ErrorState"
+import Gallery from "../../components/productDetails/Gallery"
+import StarRating from "../../components/productDetails/StarRating"
+import { HangerSvg } from "../../components/productDetails/svgs"
+import {
+  PriceBlock, SizeSelector, QuantityStepper, AddToCartButton, StockNotice,
+  ShippingProgress, DeliveryEstimate,
+} from "../../components/productDetails/PurchaseParts"
+import { useAddToCart } from "../../components/productDetails/useAddToCart"
+import {
+  StoreCard, TrustGrid, DetailsAccordion, RelatedCarousel, StickyCartBar,
+} from "../../components/productDetails/Sections"
+
+const EASE = [0.22, 1, 0.36, 1]
 
 function buildImageUrl(image) {
   if (!image) return "/placeholder.png"
@@ -23,51 +33,46 @@ function buildImageUrl(image) {
   return `${API_BASE_URL}/uploads/${image}`
 }
 
-const guaranteeItems = [
-  { icon: FiShield, label: "Secure Checkout", desc: "Protected by SSL" },
-  { icon: FiRotateCcw, label: "Easy Returns", desc: "30-day return policy" },
-]
-
-function StarRating({ rating = 0, size = "w-4 h-4" }) {
-  return (
-    <div className="flex items-center gap-0.5">
-      {[...Array(5)].map((_, i) => (
-        <FiStar
-          key={i}
-          className={`${size} ${i < Math.floor(rating) ? "text-amber-400 fill-current" : "text-gray-200"}`}
-        />
-      ))}
-    </div>
-  )
+const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } }
+const rise = {
+  hidden: { opacity: 0, y: 16 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: EASE } },
 }
 
-function Card({ children, className = "" }) {
+const cardCls = "soft-card rounded-3xl p-5 sm:p-7"
+
+function Reveal({ children, className = "" }) {
+  const reduce = useReducedMotion()
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 15 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className={`bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-300 ${className}`}
+    <motion.section
+      initial={{ opacity: 0, y: reduce ? 0 : 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{ duration: reduce ? 0 : 0.45, ease: EASE }}
+      className={className}
     >
       {children}
-    </motion.div>
+    </motion.section>
   )
 }
 
 export default function ProductDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const reduce = useReducedMotion()
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
-  const addToCart = useCartStore((s) => s.addToCart)
+  const checkWishlist = useWishlistStore((s) => s.checkWishlist)
+  const toggleWishlist = useWishlistStore((s) => s.toggleWishlist)
 
-  const [selectedImage, setSelectedImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
   const [selectedSize, setSelectedSize] = useState(null)
   const [copied, setCopied] = useState(false)
   const [wishlisted, setWishlisted] = useState(false)
   const [showAllDetails, setShowAllDetails] = useState(false)
-  const checkWishlist = useWishlistStore((s) => s.checkWishlist)
-  const toggleWishlist = useWishlistStore((s) => s.toggleWishlist)
+  const [showSticky, setShowSticky] = useState(false)
+
+  const imageRef = useRef(null)
+  const ctaRef = useRef(null)
 
   const { data: res, isLoading, isError, error } = useApiQuery(`/api/products/${id}`)
   const product = res?.product || null
@@ -77,22 +82,35 @@ export default function ProductDetailPage() {
     if (id && isAuthenticated) checkWishlist(id).then(setWishlisted)
   }, [id, isAuthenticated, checkWishlist])
 
-  const images = product
-    ? [product.image, ...(product.otherImages?.filter(img => img !== product.image) || [])]
-    : []
-
+  // Reset selections per product; only auto-select when exactly one size exists.
   useEffect(() => {
-    if (product?.size?.length && !selectedSize) {
-      setSelectedSize(product.size[0])
-    }
-  }, [product, selectedSize])
+    setQuantity(1)
+    setSelectedSize(product?.size?.length === 1 ? product.size[0] : null)
+  }, [product?._id]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleAddToCart = () => {
-    if (!isAuthenticated) { navigate("/signin"); return }
-    if (product) {
-      addToCart({ id: product._id, quantity, size: selectedSize || product.size?.[0] })
-    }
-  }
+  const images = product
+    ? [product.image, ...(product.otherImages?.filter((img) => img !== product.image) || [])]
+    : []
+  const imageUrls = images.map(buildImageUrl)
+  const stock = product?.stock ?? 0
+  const soldOut = stock <= 0
+  const hasSizes = (product?.size?.length || 0) > 0
+
+  const { state, run, sizeError, shakeKey, toastNode } = useAddToCart({
+    product, quantity, size: selectedSize, imageRef, imgSrc: imageUrls[0],
+  })
+
+  // Sticky bar: show once the CTA row has scrolled above the viewport.
+  useEffect(() => {
+    const el = ctaRef.current
+    if (!el || typeof IntersectionObserver === "undefined") return
+    const io = new IntersectionObserver(
+      ([entry]) => setShowSticky(!entry.isIntersecting && entry.boundingClientRect.top < 0),
+      { rootMargin: "0px 0px -40px 0px" },
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [product?._id])
 
   const copyLink = () => {
     navigator.clipboard.writeText(window.location.href)
@@ -106,23 +124,42 @@ export default function ProductDetailPage() {
       })
   }
 
+  const handleToggleWishlist = async () => {
+    if (!isAuthenticated) { navigate("/signin"); return }
+    const r = await toggleWishlist(id)
+    if (r !== null) setWishlisted(r)
+  }
+
+  const goReviews = (e) => {
+    e.preventDefault()
+    document.getElementById("reviews")?.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" })
+  }
+
   if (isLoading) return <ProductDetailSkeleton />
   if (isError) {
+    const notFound = error?.response?.status === 404
     return (
-      <main className="min-h-screen flex items-center justify-center bg-gray-50/50">
-        <div className="text-center px-4">
-          <div className="w-20 h-20 rounded-2xl bg-rose-50 flex items-center justify-center mx-auto mb-5">
-            <FiX className="w-8 h-8 text-red-500" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Product Not Found</h2>
-          <p className="text-gray-500 mb-6 max-w-sm mx-auto text-sm">
-            {error?.response?.status === 404
-              ? "This product doesn't exist or has been removed."
+      <main className="soft-page flex items-center justify-center px-4 py-10">
+        <div className="soft-card flex w-full max-w-lg flex-col items-center rounded-3xl px-6 py-12 text-center">
+          {notFound ? <NotFound size={220} className="mb-6" /> : <ErrorState size={220} className="mb-6" />}
+          <h2 className="text-xl font-semibold text-gray-900">
+            {notFound ? "Product not found" : "We couldn't load this product"}
+          </h2>
+          <p className="mt-2 max-w-sm text-sm text-gray-500">
+            {notFound
+              ? "This item may have been removed or sold out."
               : "Something went wrong while loading this product. Please try again."}
           </p>
-          <div className="flex items-center justify-center gap-3">
-            <Button variant="outline" onClick={() => navigate(-1)}>Go Back</Button>
-            <Button variant="red" onClick={() => window.location.reload()}>Try Again</Button>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            <button type="button" onClick={() => navigate(-1)} className="soft-btn soft-btn-ghost">
+              <FiArrowLeft className="h-4 w-4" /> Go back
+            </button>
+            <button type="button" onClick={() => window.location.reload()} className="soft-btn soft-btn-primary">
+              <FiRefreshCw className="h-4 w-4" /> Try again
+            </button>
+            <Link to="/productlist/all" className="text-sm font-semibold text-red-600 hover:text-red-700">
+              Browse products
+            </Link>
           </div>
         </div>
       </main>
@@ -136,395 +173,184 @@ export default function ProductDetailPage() {
   const salePrice = hasSale ? price * (1 - salePercentage / 100) : price
   const displayPrice = hasSale ? salePrice : price
   const savings = hasSale ? price - salePrice : 0
-  const currentSize = selectedSize || product.size?.[0] || null
+  const salePct = hasSale ? Math.round((1 - salePrice / price) * 100) : 0
+  const rating = product.rating || 0
+  const reviewCount = product.totalReviews || 0
+  const hasDescription = typeof product.description === "string" && product.description.trim()
+  const ctaLabel = hasSizes && !selectedSize ? "Select a size" : "Add to cart"
+  const categoryName = product.category?.name || "General"
 
   return (
-    <main className="min-h-screen bg-slate-50/40 text-gray-800 pb-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+    <main className="soft-page text-gray-800">
+      <div className="mx-auto max-w-7xl px-4 py-5 pb-28 sm:px-6 lg:px-8 lg:py-8">
 
-        {/* Minimalist Breadcrumb */}
+        {/* Breadcrumb */}
         <motion.nav
-          initial={{ opacity: 0, x: -10 }}
+          aria-label="Breadcrumb"
+          initial={{ opacity: 0, x: reduce ? 0 : -10 }}
           animate={{ opacity: 1, x: 0 }}
-          className="flex items-center gap-2 text-xs font-medium text-gray-400 mb-6"
+          className="mb-4 flex items-center gap-2 overflow-x-auto whitespace-nowrap text-xs font-medium text-gray-500 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:mb-6"
         >
-          <Link to="/" className="hover:text-red-600 transition-colors">Home</Link>
-          <FiChevronRight className="w-3 h-3 text-gray-300" />
-          <Link to="/productlist/all" className="hover:text-red-600 transition-colors">Products</Link>
-          <FiChevronRight className="w-3 h-3 text-gray-300" />
-          <span className="text-gray-900 font-semibold truncate max-w-[200px] sm:max-w-xs">{product.name}</span>
+          <Link to="/" className="flex items-center gap-1 hover:text-red-600"><FiHome className="h-3.5 w-3.5" /> Home</Link>
+          <FiChevronRight className="h-3 w-3 shrink-0 text-gray-400" />
+          <Link to="/productlist/all" className="hover:text-red-600">Products</Link>
+          <FiChevronRight className="h-3 w-3 shrink-0 text-gray-400" />
+          <span>{categoryName}</span>
+          <FiChevronRight className="h-3 w-3 shrink-0 text-gray-400" />
+          <span className="max-w-[200px] truncate font-semibold text-gray-900 sm:max-w-xs">{product.name}</span>
         </motion.nav>
 
-        {/* Main Product Layout Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12 lg:gap-10">
 
-          {/* Left Column — 4:5 Image Gallery */}
-          <div className="lg:col-span-6 lg:sticky lg:top-8">
-            <Card className="p-3 sm:p-4">
-              <motion.div
-                key={selectedImage}
-                initial={{ opacity: 0.8 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.3 }}
-                className="relative bg-gray-50/80 rounded-xl overflow-hidden group aspect-4/5 w-full"
-              >
-                <img
-                  src={buildImageUrl(images[selectedImage] || product.image)}
-                  alt={product.name}
-                  className="w-full h-full object-cover"
-                />
+          {/* Gallery */}
+          <div className="-mx-4 sm:-mx-6 lg:col-span-7 lg:mx-0 lg:sticky lg:top-24">
+            <Gallery
+              images={imageUrls}
+              name={product.name}
+              hasSale={hasSale}
+              salePct={salePct}
+              wishlisted={wishlisted}
+              onToggleWishlist={handleToggleWishlist}
+              onShare={copyLink}
+              copied={copied}
+              imageRef={imageRef}
+            />
+            {soldOut && (
+              <p className="mt-3 px-4 text-center text-xs font-medium text-gray-500 sm:px-6 lg:px-0 lg:text-left">
+                Save to wishlist to find it later
+              </p>
+            )}
+          </div>
 
-                {/* Sale Badge */}
-                {hasSale && (
-                  <div className="absolute top-4 left-4 bg-red-600/90 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm flex items-center gap-1.5">
-                    <FiTag className="w-3 h-3" />
-                    {Math.round((1 - salePrice / price) * 100)}% OFF
-                  </div>
+          {/* Right column */}
+          <motion.div
+            variants={stagger} initial="hidden" animate="show"
+            className="flex flex-col gap-5 lg:col-span-5"
+          >
+            {/* Info */}
+            <motion.div variants={rise} className={cardCls}>
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <span className="soft-chip inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold">
+                  <FiTag className="h-3 w-3" /> {categoryName}
+                </span>
+                <StockNotice stock={stock} />
+              </div>
+              <h1 className="text-2xl font-semibold leading-snug tracking-tight text-gray-900 sm:text-3xl">
+                {product.name}
+              </h1>
+
+              <a href="#reviews" onClick={goReviews} className="mt-3 inline-flex min-h-[44px] items-center gap-2 text-sm">
+                <StarRating rating={rating} />
+                {reviewCount > 0 ? (
+                  <span className="font-semibold text-gray-700 underline-offset-2 hover:underline">
+                    {rating.toFixed(1)} · {reviewCount} {reviewCount === 1 ? "review" : "reviews"}
+                  </span>
+                ) : (
+                  <span className="text-gray-500 underline-offset-2 hover:underline">No reviews yet — be the first</span>
                 )}
+              </a>
 
-                {/* Floating Wishlist Heart */}
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={async () => {
-                    if (!isAuthenticated) { navigate("/signin"); return }
-                    const res = await toggleWishlist(id)
-                    if (res !== null) setWishlisted(res)
-                  }}
-                  className={`absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-md shadow-sm transition-all ${
-                    wishlisted ? "bg-red-600 text-white" : "bg-white/80 hover:bg-white text-gray-500 hover:text-red-600"
-                  }`}
-                >
-                  <FiHeart className={`w-4 h-4 ${wishlisted ? "fill-current" : ""}`} />
-                </motion.button>
+              <div className="mt-3">
+                <PriceBlock price={price} displayPrice={displayPrice} hasSale={hasSale} salePct={salePct} savings={savings} />
+              </div>
 
-                {/* Navigation Arrows for Gallery */}
-                {images.length > 1 && (
-                  <>
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      onClick={() => setSelectedImage(i => i > 0 ? i - 1 : images.length - 1)}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/90 hover:bg-white shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all text-gray-700"
-                    >
-                      <FiChevronLeft className="w-4 h-4" />
-                    </motion.button>
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      onClick={() => setSelectedImage(i => i < images.length - 1 ? i + 1 : 0)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/90 hover:bg-white shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all text-gray-700"
-                    >
-                      <FiChevronRight className="w-4 h-4" />
-                    </motion.button>
-                  </>
-                )}
-
-                {/* Counter */}
-                <div className="absolute bottom-4 right-4 bg-gray-900/70 backdrop-blur-md text-white text-[11px] font-medium px-2.5 py-1 rounded-full flex items-center gap-1">
-                  <FiBox className="w-3 h-3" />
-                  {selectedImage + 1} / {images.length}
-                </div>
-              </motion.div>
-
-              {/* 4:5 Aspect Ratio Thumbnails */}
-              {images.length > 1 && (
-                <div className="flex gap-3 mt-4 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                  {images.map((image, index) => (
-                    <motion.button
-                      key={index}
-                      whileHover={{ scale: 1.03 }}
-                      whileTap={{ scale: 0.96 }}
-                      onClick={() => setSelectedImage(index)}
-                      className={`relative rounded-xl overflow-hidden flex-shrink-0 border-2 transition-all aspect-[4/5] w-16 sm:w-20 ${
-                        selectedImage === index
-                          ? "border-red-600 ring-2 ring-red-600/20 shadow-sm"
-                          : "border-transparent opacity-75 hover:opacity-100"
-                      }`}
-                    >
-                      <img src={buildImageUrl(image)} alt="" className="w-full h-full object-cover" />
-                    </motion.button>
-                  ))}
+              {hasDescription && (
+                <div className="mt-4 space-y-1">
+                  <p className="line-clamp-3 text-sm leading-relaxed text-gray-600">{product.description}</p>
+                  <button
+                    type="button"
+                    onClick={() => setShowAllDetails(true)}
+                    className="inline-flex min-h-[44px] items-center gap-1.5 text-xs font-semibold text-red-600 hover:text-red-700"
+                  >
+                    <FiMaximize2 className="h-3.5 w-3.5" /> Read full details
+                  </button>
                 </div>
               )}
-            </Card>
-          </div>
+            </motion.div>
 
-          {/* Right Column — Product Details & Interaction */}
-          <div className="lg:col-span-6 flex flex-col gap-6">
-            <Card className="p-6 sm:p-8">
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-6"
-              >
-                {/* Category & Stock Pill */}
-                <div>
-                  <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
-                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-700 bg-red-50 border border-red-100 px-3 py-1 rounded-full">
-                      <FiTag className="w-3 h-3" />
-                      {product.category?.name || "General"}
-                    </span>
-                    {hasSale && (
-                      <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-100 px-3 py-1 rounded-full flex items-center gap-1">
-                        <FiDollarSign className="w-3 h-3" /> Save ${savings.toFixed(2)}
-                      </span>
-                    )}
-                  </div>
-
-                  <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 leading-tight tracking-tight">
-                    {product.name}
-                  </h1>
+            {/* Purchase */}
+            <motion.div variants={rise} className={`${cardCls} space-y-5`}>
+              {hasSizes && (
+                <div id="size-selector" className="scroll-mt-28">
+                  <SizeSelector
+                    sizes={product.size}
+                    value={selectedSize}
+                    onChange={setSelectedSize}
+                    error={sizeError}
+                    shakeKey={shakeKey}
+                  />
                 </div>
+              )}
 
-                {/* Store link & Rating */}
-                <div className="flex items-center justify-between flex-wrap gap-3 py-2 border-y border-gray-100">
-                  {product.store ? (
-                    <Link
-                      to={`/stores/${product.store.slug}`}
-                      className="inline-flex items-center gap-2 text-xs font-semibold text-gray-600 hover:text-red-600 transition-colors group"
-                    >
-                      <div className="w-7 h-7 rounded-full bg-red-600 text-white flex items-center justify-center font-bold shadow-sm text-xs">
-                        {product.store.storeName?.charAt(0)}
-                      </div>
-                      <span>{product.store.storeName}</span>
-                      <FiArrowRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </Link>
-                  ) : (
-                    <span className="inline-flex items-center gap-2 text-xs text-gray-400">
-                      <FaStore className="w-3.5 h-3.5" /> Direct Merchant
-                    </span>
-                  )}
-
-                  <div className="flex items-center gap-2">
-                    <StarRating rating={product.rating || 0} />
-                    <span className="text-xs font-bold text-gray-900">{(product.rating || 0).toFixed(1)}</span>
-                    <span className="text-xs text-gray-400">({product.totalReviews || 0} reviews)</span>
-                  </div>
+              {soldOut && (
+                <div className="soft-card-inset flex flex-col items-center rounded-2xl px-4 py-5 text-center">
+                  <HangerSvg size={96} />
+                  <p className="mt-1 text-sm font-semibold text-gray-900">Sold out for now</p>
                 </div>
+              )}
 
-                {/* Price Display */}
-                <div className="flex items-baseline gap-3">
-                  <span className="text-3xl font-black text-gray-900 tracking-tight">${displayPrice.toFixed(2)}</span>
-                  {hasSale && (
-                    <span className="text-base text-gray-400 line-through font-medium">${price.toFixed(2)}</span>
-                  )}
-                </div>
-
-                {/* Description Snippet */}
-                {typeof product.description === "string" && product.description.trim() && (
-                  <div className="space-y-2">
-                    <p className="text-gray-600 leading-relaxed text-sm">
-                      {product.description.length > 140
-                        ? product.description.slice(0, 140) + "..."
-                        : product.description
-                      }
-                    </p>
-                    {product.description.length > 140 && (
-                      <button
-                        onClick={() => setShowAllDetails(true)}
-                        className="text-xs font-bold text-red-600 hover:text-red-700 transition-colors flex items-center gap-1"
-                      >
-                        <FiMaximize2 className="w-3 h-3" /> Read full description
-                      </button>
-                    )}
-                  </div>
-                )}
-
-                {/* Size Selector */}
-                {product.size?.length > 0 && (
-                  <div className="space-y-2.5">
-                    <div className="flex items-center justify-between text-xs font-semibold text-gray-700">
-                      <span className="flex items-center gap-1.5">
-                        <FiGrid className="w-3.5 h-3.5 text-red-600" />
-                        Select Size
-                      </span>
-                      <span className="text-gray-400 font-normal">{currentSize}</span>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {product.size.map((size) => (
-                        <button
-                          key={size}
-                          onClick={() => setSelectedSize(size)}
-                          className={`w-11 h-11 rounded-xl text-xs font-bold transition-all duration-200 ${
-                            currentSize === size
-                              ? "bg-gray-900 text-white shadow-md"
-                              : "bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200/60"
-                          }`}
-                        >
-                          {size}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Quantity & Actions */}
-                <div className="space-y-4 pt-2">
-                  <div className="flex items-center gap-3">
-                    {/* Stepper */}
-                    <div className="flex items-center border border-gray-200 rounded-xl bg-gray-50/50 p-1">
-                      <button
-                        onClick={() => setQuantity(q => Math.max(1, q - 1))}
-                        className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-white transition-colors text-gray-600"
-                      >
-                        <FiMinus className="w-3.5 h-3.5" />
-                      </button>
-                      <span className="w-10 text-center text-sm font-bold text-gray-900">{quantity}</span>
-                      <button
-                        onClick={() => setQuantity(q => Math.min(product.stock || 99, q + 1))}
-                        className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-white transition-colors text-gray-600"
-                      >
-                        <FiPlus className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-
-                    {/* Add to Cart Button */}
-                    <motion.button
-                      whileHover={{ scale: 1.01 }}
-                      whileTap={{ scale: 0.99 }}
-                      onClick={handleAddToCart}
-                      className="flex-1 h-11 bg-red-600 hover:bg-red-700 text-white font-bold text-sm rounded-xl transition-all shadow-md shadow-red-600/20 flex items-center justify-center gap-2"
-                    >
-                      <FiShoppingBag className="w-4 h-4" /> Add to Cart
-                    </motion.button>
-
-                    {/* Share Link */}
-                    <button
-                      onClick={copyLink}
-                      className="w-11 h-11 border border-gray-200 rounded-xl flex items-center justify-center text-gray-500 hover:text-red-600 hover:border-red-200 transition-colors bg-white"
-                      title="Share product"
-                    >
-                      <FiShare2 className="w-4 h-4" />
-                    </button>
-                  </div>
-
-                  {/* Stock Availability */}
-                  <div className="flex items-center gap-2 text-xs">
-                    {product.stock > 0 ? (
-                      <>
-                        <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                        <span className="text-emerald-700 font-semibold">{product.stock} items available in stock</span>
-                      </>
-                    ) : (
-                      <>
-                        <span className="w-2 h-2 rounded-full bg-rose-500" />
-                        <span className="text-rose-600 font-semibold">Currently Out of Stock</span>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </motion.div>
-            </Card>
-
-            {/* Minimalist Guarantees Bar */}
-            <Card className="p-4 bg-white">
-              <div className="grid grid-cols-3 gap-2">
-                {guaranteeItems.map((item) => (
-                  <div
-                    key={item.label}
-                    className="flex flex-col items-center text-center p-2 rounded-xl bg-slate-50/60"
-                  >
-                    <item.icon className="w-4 h-4 text-red-600 mb-1" />
-                    <p className="text-xs font-bold text-gray-800">{item.label}</p>
-                    <p className="text-[10px] text-gray-400 mt-0.5">{item.desc}</p>
-                  </div>
-                ))}
+              <div ref={ctaRef} className="flex items-stretch gap-3">
+                <QuantityStepper value={quantity} onChange={setQuantity} max={Math.max(1, stock)} disabled={soldOut} />
+                <AddToCartButton state={state} onClick={run} disabled={soldOut} soldOut={soldOut} label={ctaLabel} />
               </div>
-            </Card>
-          </div>
+
+              {!soldOut && <ShippingProgress subtotal={displayPrice * quantity} />}
+              <DeliveryEstimate />
+            </motion.div>
+
+            {/* Store: after purchase on desktop, after trust on mobile */}
+            <motion.div variants={rise} className={`${cardCls} order-4 lg:order-3`}>
+              <StoreCard store={product.store} />
+            </motion.div>
+
+            {/* Trust */}
+            <motion.div variants={rise} className={`${cardCls} order-3 lg:order-4`}>
+              <TrustGrid />
+            </motion.div>
+          </motion.div>
         </div>
 
-        {/* Product Reviews Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mt-10"
-        >
-          <Card className="p-6 sm:p-8">
-            <h2 className="text-xl font-bold text-gray-900 mb-1 flex items-center gap-2">
-              <FiStar className="w-5 h-5 text-amber-400 fill-current" />
-              Customer Ratings & Reviews
+        {/* Details accordion */}
+        <Reveal className="mt-8 lg:mt-10">
+          <div className={cardCls}>
+            <DetailsAccordion description={hasDescription ? product.description : ""} onOpenModal={() => setShowAllDetails(true)} />
+          </div>
+        </Reveal>
+
+        {/* Reviews */}
+        <Reveal className="mt-8 lg:mt-10">
+          <div id="reviews" className={`${cardCls} scroll-mt-24`}>
+            <h2 className="soft-section-title text-xl font-semibold text-gray-900">
+              <span className="soft-icon-tile soft-icon-tile-sm"><FiMessageSquare className="h-4 w-4" /></span>
+              Customer ratings &amp; reviews
             </h2>
-            <p className="text-xs text-gray-400 mb-6">
-              Verified customer feedback and experiences
-            </p>
+            <p className="mb-6 mt-1 text-xs text-gray-500">Verified customer feedback and experiences</p>
             <ReviewSection productId={id} modal={false} />
-          </Card>
-        </motion.div>
+          </div>
+        </Reveal>
 
-        {/* Related Products Carousel Grid — All 4:5 Aspect Ratio Images */}
+        {/* Related */}
         {related.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mt-10"
-          >
-            <Card className="p-6 sm:p-8">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                  <FiPackage className="w-5 h-5 text-red-600" />
-                  You Might Also Like
-                </h2>
-                <Link
-                  to="/productlist/all"
-                  className="text-xs font-bold text-red-600 hover:text-red-700 transition-colors flex items-center gap-1"
-                >
-                  Explore All <FiArrowRight className="w-3.5 h-3.5" />
-                </Link>
-              </div>
-
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-                {related.map((rp, _i) => {
-                  const rPrice = rp.price ?? 0
-                  const rSalePercentage = rp.sale ?? 0
-                  const rHasSale = rSalePercentage > 0 && rSalePercentage < 100
-                  const rSale = rHasSale ? rPrice * (1 - rSalePercentage / 100) : rPrice
-                  return (
-                    <Link key={rp._id} to={`/products/${rp._id}`}>
-                      <motion.div
-                        whileHover={{ y: -4 }}
-                        className="group bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all"
-                      >
-                        {/* Related Product Image — Strict 4:5 Aspect Ratio */}
-                        <div className="relative aspect-[4/5] overflow-hidden bg-gray-50">
-                          <img
-                            src={buildImageUrl(rp.image)}
-                            alt={rp.name}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          />
-                          {rHasSale && (
-                            <div className="absolute top-2 left-2 bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
-                              Sale
-                            </div>
-                          )}
-                        </div>
-                        <div className="p-3.5 space-y-1">
-                          <p className="text-xs font-bold text-gray-900 truncate">{rp.name}</p>
-                          <div className="flex items-center gap-1.5">
-                            {rHasSale ? (
-                              <>
-                                <span className="text-xs font-bold text-red-600">${rSale.toFixed(2)}</span>
-                                <span className="text-[10px] text-gray-400 line-through">${rPrice.toFixed(2)}</span>
-                              </>
-                            ) : (
-                              <span className="text-xs font-bold text-gray-900">${rPrice.toFixed(2)}</span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-1 pt-0.5">
-                            <StarRating rating={rp.rating || 0} size="w-3 h-3" />
-                            <span className="text-[10px] text-gray-400">({rp.totalReviews || 0})</span>
-                          </div>
-                        </div>
-                      </motion.div>
-                    </Link>
-                  )
-                })}
-              </div>
-            </Card>
-          </motion.div>
+          <Reveal className="mt-8 lg:mt-10">
+            <RelatedCarousel items={related} toUrl={buildImageUrl} />
+          </Reveal>
         )}
       </div>
+
+      <StickyCartBar
+        visible={showSticky}
+        name={product.name}
+        imgSrc={imageUrls[0]}
+        displayPrice={displayPrice}
+        size={selectedSize}
+        state={state}
+        onAdd={run}
+        disabled={soldOut}
+        soldOut={soldOut}
+        label={ctaLabel}
+      />
+
+      {toastNode}
 
       {/* Full Details Modal */}
       <AnimatePresence>
@@ -545,7 +371,7 @@ export default function ProductDetailPage() {
               className="fixed inset-x-4 top-[8%] max-w-xl mx-auto bg-white rounded-3xl shadow-2xl z-50 overflow-hidden border border-gray-100 max-h-[80vh] flex flex-col"
             >
               <div className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between flex-shrink-0">
-                <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
                   <FiMaximize2 className="w-4 h-4 text-red-600" />
                   Product Information & Specifications
                 </h3>
@@ -558,22 +384,22 @@ export default function ProductDetailPage() {
               </div>
               <div className="p-6 overflow-y-auto space-y-4 text-xs text-gray-700">
                 <div>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Product Title</p>
-                  <p className="font-bold text-sm text-gray-900">{product.name}</p>
+                  <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Product Title</p>
+                  <p className="font-semibold text-sm text-gray-900">{product.name}</p>
                 </div>
-                {typeof product.description === "string" && product.description.trim() && (
+                {hasDescription && (
                   <div>
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Full Description</p>
+                    <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Full Description</p>
                     <p className="leading-relaxed whitespace-pre-wrap">{product.description}</p>
                   </div>
                 )}
                 <div className="grid grid-cols-2 gap-4 pt-2 border-t border-gray-100">
                   <div>
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Category</p>
+                    <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-0.5">Category</p>
                     <p className="font-medium text-gray-900">{product.category?.name || "General"}</p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Merchant Store</p>
+                    <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-0.5">Merchant Store</p>
                     <p className="font-medium text-gray-900">{product.store?.storeName || "DiObral Marketplace"}</p>
                   </div>
                 </div>
@@ -599,4 +425,3 @@ export default function ProductDetailPage() {
     </main>
   )
 }
-

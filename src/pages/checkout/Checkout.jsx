@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react"
-import { useNavigate, useLocation } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import { useAuthStore } from "../../store/authStore"
 import { useCartStore } from "../../store/cartStore"
 import { post, apiCall } from "../../api/client"
@@ -11,9 +11,9 @@ import PaymentSuccessModal from "../../components/checkout/PaymentSuccessModal"
 import {
   FiCheck, FiMapPin, FiUser, FiShoppingBag, FiArrowRight,
   FiTag, FiMessageSquare, FiPhone, FiHome, FiGlobe,
-  FiLoader,
+  FiLoader, FiShield, FiMail, FiTruck, FiCreditCard, FiLock, FiPercent, FiArrowLeft, FiAlertCircle, FiMap,
 } from "react-icons/fi"
-import Button from "../../components/ui/Button"
+import { EmptyCart } from "../../components/illustrations"
 import { getCartItemPrice } from "../../lib/utils"
 
 const CartItem = ({ item, index }) => {
@@ -35,14 +35,14 @@ const CartItem = ({ item, index }) => {
       <img
         src={image ? `${import.meta.env.VITE_API_BASE_URL}/uploads/${image}` : "/placeholder.png"}
         alt={name}
-        className="rounded-lg border border-gray-200 w-14 h-14 object-cover flex-shrink-0"
+        className="rounded-2xl ring-1 ring-gray-200/60 shadow-soft-xs w-14 h-14 object-cover flex-shrink-0"
       />
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-gray-900 truncate">{name}</p>
         <p className="text-xs text-gray-400">{isBundle ? "Bundle Deal" : `Size: ${item.size}`} &middot; Qty: {item.quantity}</p>
       </div>
       <div className="text-right flex-shrink-0">
-        <p className="text-sm font-semibold text-gray-900">Rs. {price.toFixed(2)}</p>
+        <p className="text-sm font-semibold text-gray-900 whitespace-nowrap">Rs. {price.toFixed(2)}</p>
         {hasSale && <p className="text-[10px] text-gray-400 line-through">Rs. {originalPrice.toFixed(2)}</p>}
       </div>
     </motion.div>
@@ -74,13 +74,6 @@ export default function Checkout() {
   const [couponState, setCouponState] = useState({ checking: false, applied: false, discount: 0, message: "" })
   const couponDebounce = useRef(null)
 
-  const location = useLocation()
-  const [profileLoaded, setProfileLoaded] = useState(false)
-  const autoAttempted = useRef(false)
-  const autoAlive = useRef(true)
-
-  useEffect(() => () => { autoAlive.current = false }, [])
-
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -99,8 +92,6 @@ export default function Checkout() {
         }))
       } catch {
         navigate("/signin")
-      } finally {
-        setProfileLoaded(true)
       }
     }
     fetchProfile()
@@ -209,23 +200,6 @@ export default function Checkout() {
     setShowSuccess(true)
   }
 
-  // Assistant "finalize / confirm order" flow: arrives with location.state { autoPlace: true }
-  const autoPlace = location.state?.autoPlace
-  useEffect(() => {
-    if (!autoPlace || autoAttempted.current) return
-    if (!cart.length || !profileLoaded) return
-    autoAttempted.current = true
-    // deferred so the page paints first and re-renders cannot cancel the attempt
-    setTimeout(() => {
-      if (!autoAlive.current) return
-      if (form.street && form.city && form.state && form.country && form.phone) {
-        handlePlaceOrder()
-      } else {
-        setError("Complete the required shipping fields to finalize your order")
-      }
-    }, 300)
-  }, [autoPlace, cart.length, profileLoaded, form.street, form.city, form.state, form.country, form.phone, handlePlaceOrder])
-
   const handleCloseSuccess = () => {
     const res = pendingOrder
     const justPlaced = {
@@ -239,25 +213,25 @@ export default function Checkout() {
 
   if (!cart.length) {
     return (
-      <main className="min-h-screen bg-gray-50">
-        <div className="max-w-4xl mx-auto px-4 py-16 text-center">
-          <FiShoppingBag className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h2 className="text-2xl font-semibold text-gray-900 mb-2">Your cart is empty</h2>
-          <p className="text-gray-500 mb-8">Add some items before checking out.</p>
-          <Link to="/productlist/all">
-            <Button variant="red">Continue Shopping <FiArrowRight className="ml-2 inline" /></Button>
-          </Link>
+      <main className="soft-page">
+        <div className="max-w-4xl mx-auto px-4 py-16">
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="soft-card mx-auto max-w-lg px-6 py-12 flex flex-col items-center text-center">
+            <EmptyCart size={200} className="mb-6" />
+            <h2 className="text-xl font-semibold text-gray-900">Your cart is empty</h2>
+            <p className="mt-2 text-sm text-gray-500">Add some items before checking out.</p>
+            <Link to="/productlist/all" className="soft-btn soft-btn-primary mt-6"><FiShoppingBag className="h-4 w-4" />Continue shopping<FiArrowRight className="h-4 w-4" /></Link>
+          </motion.div>
         </div>
       </main>
     )
   }
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="soft-page">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Checkout</h1>
-          <p className="text-gray-500 mt-1">Review your order and complete purchase</p>
+          <h1 className="soft-section-title text-3xl font-semibold text-gray-900"><span className="soft-icon-tile"><FiLock className="h-5 w-5" /></span>Checkout</h1>
+          <p className="text-gray-500 mt-2 flex items-center gap-1.5"><FiShield className="h-4 w-4 text-red-500" />Review your order and complete purchase</p>
         </motion.div>
 
         <div className="flex flex-col lg:flex-row gap-8">
@@ -265,35 +239,35 @@ export default function Checkout() {
           {/* Left — Form */}
           <div className="flex-1 space-y-6">
             {/* Contact */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
-              <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2 mb-4">
-                <FiUser className="w-5 h-5 text-rose-500" /> Contact
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="soft-card rounded-3xl p-6">
+              <h2 className="soft-section-title text-lg font-semibold text-gray-900 mb-4">
+                <span className="soft-icon-tile soft-icon-tile-sm"><FiUser className="h-4 w-4" /></span> Contact
               </h2>
               <div className="grid sm:grid-cols-2 gap-4">
-                <Input label="Full Name" value={form.fullName} onChange={(e) => set("fullName", e.target.value)} />
-                <Input label="Email" type="email" value={form.email} onChange={(e) => set("email", e.target.value)} />
+                <Input label="Full Name" icon={FiUser} value={form.fullName} onChange={(e) => set("fullName", e.target.value)} />
+                <Input label="Email" icon={FiMail} type="email" value={form.email} onChange={(e) => set("email", e.target.value)} />
                 <Input label="Phone *" type="tel" value={form.phone} onChange={(e) => set("phone", e.target.value)} placeholder="+92 300 1234567" className="sm:col-span-2" icon={FiPhone} />
               </div>
             </motion.div>
 
             {/* Shipping */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
-              <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2 mb-4">
-                <FiMapPin className="w-5 h-5 text-rose-500" /> Shipping Address
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="soft-card rounded-3xl p-6">
+              <h2 className="soft-section-title text-lg font-semibold text-gray-900 mb-4">
+                <span className="soft-icon-tile soft-icon-tile-sm"><FiTruck className="h-4 w-4" /></span> Shipping Address
               </h2>
               <div className="grid sm:grid-cols-2 gap-4">
                 <Input label="Street Address *" value={form.street} onChange={(e) => set("street", e.target.value)} icon={FiHome} className="sm:col-span-2" />
-                <Input label="City *" value={form.city} onChange={(e) => set("city", e.target.value)} />
-                <Input label="State *" value={form.state} onChange={(e) => set("state", e.target.value)} />
+                <Input label="City *" icon={FiMapPin} value={form.city} onChange={(e) => set("city", e.target.value)} />
+                <Input label="State *" icon={FiMap} value={form.state} onChange={(e) => set("state", e.target.value)} />
                 <Input label="Country *" value={form.country} onChange={(e) => set("country", e.target.value)} icon={FiGlobe} className="sm:col-span-2" />
               </div>
             </motion.div>
 
             {/* Extras */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="soft-card rounded-3xl p-6">
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5 flex items-center gap-1.5"><FiTag className="w-4 h-4 text-rose-500" /> Coupon Code</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5 flex items-center gap-1.5"><FiTag className="w-4 h-4 text-red-500" /> Coupon Code</label>
                   <input
                     value={form.couponCode}
                     onChange={(e) => {
@@ -307,23 +281,23 @@ export default function Checkout() {
                       }
                     }}
                     placeholder="SAVE20"
-                    className="w-full h-11 rounded-xl border-2 border-gray-200 bg-white px-4 text-sm focus:outline-none focus:border-rose-400 transition-colors uppercase"
+                    className="soft-input uppercase"
                   />
                   {couponState.checking ? (
                     <p className="mt-1.5 text-xs text-gray-500 flex items-center gap-1.5"><FiLoader className="w-3 h-3 animate-spin" /> Checking coupon...</p>
                   ) : couponState.applied ? (
                     <p className="mt-1.5 text-xs text-green-600 flex items-center gap-1.5"><FiCheck className="w-3 h-3" /> Coupon applied — saves Rs. {couponState.discount.toFixed(2)}</p>
                   ) : couponCode && couponState.message ? (
-                    <p className="mt-1.5 text-xs text-red-600">{couponState.message}</p>
+                    <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1.5"><FiAlertCircle className="w-3 h-3" />{couponState.message}</p>
                   ) : null}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5 flex items-center gap-1.5"><FiMessageSquare className="w-4 h-4 text-rose-500" /> Notes</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5 flex items-center gap-1.5"><FiMessageSquare className="w-4 h-4 text-red-500" /> Notes</label>
                   <input
                     value={form.notes}
                     onChange={(e) => set("notes", e.target.value)}
                     placeholder="Leave at door, etc."
-                    className="w-full h-11 rounded-xl border-2 border-gray-200 bg-white px-4 text-sm focus:outline-none focus:border-rose-400 transition-colors"
+                    className="soft-input"
                   />
                 </div>
               </div>
@@ -336,10 +310,10 @@ export default function Checkout() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.15 }}
-              className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm sticky top-24"
+              className="soft-card rounded-3xl p-6 sticky top-24"
             >
-              <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2 mb-4">
-                <FiShoppingBag className="w-5 h-5 text-rose-500" /> Order Summary
+              <h2 className="soft-section-title text-lg font-semibold text-gray-900 mb-4">
+                <span className="soft-icon-tile soft-icon-tile-sm"><FiShoppingBag className="h-4 w-4" /></span> Order Summary
               </h2>
 
               <div className="max-h-64 overflow-y-auto mb-4 -mx-1 px-1">
@@ -348,54 +322,56 @@ export default function Checkout() {
                 ))}
               </div>
 
-              <div className="space-y-2.5 text-sm border-t border-gray-100 pt-4">
+              <div className="soft-card-inset rounded-2xl space-y-2.5 text-sm p-4">
                 <div className="flex justify-between text-gray-600">
-                  <span>Subtotal</span>
+                  <span className="flex items-center gap-1.5"><FiTag className="h-3.5 w-3.5 text-gray-400" />Subtotal</span>
                   <span>Rs. {subtotal.toFixed(2)}</span>
                 </div>
                 {discount > 0 && (
                   <div className="flex justify-between text-green-700">
-                    <span>Discount</span>
+                    <span className="flex items-center gap-1.5"><FiPercent className="h-3.5 w-3.5" />Discount</span>
                     <span>-Rs. {discount.toFixed(2)}</span>
                   </div>
                 )}
                 {couponDiscount > 0 && (
                   <div className="flex justify-between text-green-700">
-                    <span>Coupon ({couponCode})</span>
+                    <span className="flex items-center gap-1.5"><FiTag className="h-3.5 w-3.5" />Coupon ({couponCode})</span>
                     <span>-Rs. {couponDiscount.toFixed(2)}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-gray-600">
-                  <span>Shipping</span>
+                  <span className="flex items-center gap-1.5"><FiTruck className="h-3.5 w-3.5 text-gray-400" />Shipping</span>
                   <span>{shipping === 0 ? <span className="text-green-700 font-medium">FREE</span> : <>Rs. {shipping.toFixed(2)}</>}</span>
                 </div>
-                <div className="border-t border-gray-200 pt-2.5 flex justify-between text-base font-bold text-gray-900">
-                  <span>Total</span>
+                <div className="border-t border-gray-200 pt-2.5 flex justify-between text-base font-semibold text-gray-900">
+                  <span className="flex items-center gap-1.5"><FiCreditCard className="h-4 w-4 text-red-500" />Total</span>
                   <span>Rs. {total.toFixed(2)}</span>
                 </div>
               </div>
 
-              <button
+              <motion.button
+                whileHover={{ scale: submitting ? 1 : 1.01 }}
+                whileTap={{ scale: submitting ? 1 : 0.98 }}
                 onClick={handlePlaceOrder}
                 disabled={submitting}
-                className="w-full mt-6 py-3 bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-700 hover:to-rose-800 text-white font-semibold rounded-xl shadow-lg shadow-rose-200 transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+                className="soft-btn soft-btn-primary soft-btn-lg w-full mt-6 disabled:opacity-60"
               >
                 {submitting ? (
                   <><FiLoader className="w-5 h-5 animate-spin" /> Placing Order...</>
                 ) : (
                   <><FiCheck className="w-5 h-5" /> Place Order</>
                 )}
-              </button>
+              </motion.button>
 
               {error && (
-                <p className="mt-3 text-xs text-red-600 bg-red-50 border border-red-100 rounded-xl px-3 py-2.5">
-                  {error}
+                <p className="mt-3 text-xs text-red-600 bg-gray-100 ring-1 ring-red-200 rounded-2xl px-3 py-2.5 flex items-center gap-2">
+                  <FiAlertCircle className="w-4 h-4 flex-shrink-0" />{error}
                 </p>
               )}
 
               <Link to="/cart">
-                <button className="w-full mt-3 py-2.5 text-sm text-gray-500 hover:text-gray-700 border border-gray-200 rounded-xl transition-colors">
-                  Back to Cart
+                <button className="soft-btn soft-btn-ghost w-full mt-3">
+                  <FiArrowLeft className="h-4 w-4" />Back to Cart
                 </button>
               </Link>
             </motion.div>
@@ -433,7 +409,7 @@ function Input({ label, icon: Icon, className = "", ...props }) {
       <div className="relative">
         {Icon && <Icon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />}
         <input
-          className={`w-full h-11 rounded-xl border-2 border-gray-200 bg-white ${Icon ? "pl-10" : "px-4"} text-sm focus:outline-none focus:border-rose-400 transition-colors`}
+          className={`soft-input ${Icon ? "pl-10" : ""}`}
           {...props}
         />
       </div>

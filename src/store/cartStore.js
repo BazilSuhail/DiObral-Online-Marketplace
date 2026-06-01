@@ -37,7 +37,10 @@ export const useCartStore = create((set, getState) => ({
         })
       }
       await getState().fetchCart()
-    } catch {}
+      return true
+    } catch {
+      return false
+    }
   },
 
   removeFromCart: (productId, size) => {

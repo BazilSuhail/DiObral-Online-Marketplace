@@ -9,7 +9,7 @@ const ServiceCard = ({ icon: Icon, title, description, delay = 0 }) => {
       <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
         <Icon className="w-8 h-8 text-white" />
       </div>
-      <h3 className="text-xl font-bold text-gray-900 mb-3">{title}</h3>
+      <h3 className="text-xl font-semibold text-gray-900 mb-3">{title}</h3>
       <p className="text-gray-600 leading-relaxed">{description}</p>
     </motion.div>
   )

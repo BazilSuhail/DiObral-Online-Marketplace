@@ -62,7 +62,7 @@ export default function Footer() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="grid grid-cols-1 lg:grid-cols-2">
             <div>
-              <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">Stay <span className="text-red-600">Connected</span></h2>
+              <h2 className="text-3xl lg:text-4xl font-semibold text-gray-900 mb-4">Stay <span className="text-red-600">Connected</span></h2>
               <p className="text-gray-600 text-lg mb-8 max-w-2xl mx-auto lg:pr-[85px]">Subscribe to our newsletter for exclusive offers, style tips, and early access to new collections.</p>
               <p className="text-xs text-gray-500">Join 50,000+ fashion enthusiasts. Unsubscribe anytime.</p>
             </div>
@@ -70,7 +70,7 @@ export default function Footer() {
               <input type="email" placeholder="Enter your email address"
                 className="flex h-12 w-full sm:w-[280px] ml-auto rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-0 focus:border-red-500 transition-all duration-300" />
               <div className="mt-[15px]"></div>
-              <button className="text-[16px] font-[600] py-2 bg-red-600 rounded-[12px] ml-auto w-full sm:w-[280px] justify-center text-white flex items-center">
+              <button className="text-[15px] font-semibold py-2 bg-red-600 rounded-[12px] ml-auto w-full sm:w-[280px] justify-center text-white flex items-center">
                 <FiSend className="w-4 h-4 mr-2" /> Subscribe
               </button>
             </div>
@@ -85,7 +85,7 @@ export default function Footer() {
               <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="space-y-6">
                 <Link to="/" className="flex items-center">
                   <img src="/diobral.webp" alt="DiObral" className="w-[55px] h-[55px]" />
-                  <span className="text-2xl font-bold ml-[8px] text-red-700">DiObral</span>
+                  <span className="text-2xl font-semibold ml-[8px] text-red-700">DiObral</span>
                 </Link>
                 <p className="text-gray-600 leading-relaxed max-w-md">Your destination for premium fashion and lifestyle products.</p>
                 <div className="space-y-3">
@@ -137,7 +137,7 @@ export default function Footer() {
               <FooterLink href="/about">Cookies</FooterLink>
             </motion.div>
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }} className="text-center lg:text-right">
-              <p className="text-gray-600 text-sm">&copy; {currentYear} <span className="text-red-700 font-[500]">DiObral</span>. All rights reserved.</p>
+              <p className="text-gray-600 text-sm">&copy; {currentYear} <span className="text-red-700 font-medium">DiObral</span>. All rights reserved.</p>
               <p className="text-gray-500 text-xs mt-1 flex items-center justify-center lg:justify-end">Made with <FiHeart className="inline w-3 h-3 text-red-500 mx-1" /> for fashion lovers</p>
             </motion.div>
           </div>

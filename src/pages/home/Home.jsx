@@ -53,14 +53,14 @@ const Home = () => {
             <div className="slider mt-[-25px] md:mt-[55px] sm:ml-[-150px]" style={{ '--width': '410px', '--height': '150px', '--quantity': 7 }}>
               <div className="list">
                 {[1, 2, 3, 4, 5, 6, 7].map(i => (
-                  <div className="stack" style={{ '--position': i }} key={i}><div className="w-[380px] font-[700] text-[55px]">New Arrivals</div></div>
+                  <div className="stack" style={{ '--position': i }} key={i}><div className="w-[380px] font-[600] text-[48px]">New Arrivals</div></div>
                 ))}
               </div>
             </div>
             <div className="slider sm:ml-[-150px] scale-x-[-1]" style={{ '--width': '410px', '--height': '150px', '--quantity': 7 }}>
               <div className="list">
                 {[1, 2, 3, 4, 5, 6, 7].map(i => (
-                  <div className="stack" style={{ '--position': i }} key={i}><div className="w-[380px] font-[700] scale-x-[-1] text-[55px]">New Arrivals</div></div>
+                  <div className="stack" style={{ '--position': i }} key={i}><div className="w-[380px] font-[600] scale-x-[-1] text-[48px]">New Arrivals</div></div>
                 ))}
               </div>
             </div>
@@ -73,7 +73,7 @@ const Home = () => {
                 </div>
               </div>
               <div className="w-[60%] flex flex-col justify-center">
-                <p className="text-[22px] sm:text-[32px] md:text-[45px] lg:text-[55px] xl:text-[68px] text-red-700 font-extrabold text-center">FREE DELIVERY</p>
+                <p className="text-[22px] sm:text-[32px] md:text-[40px] lg:text-[50px] xl:text-[60px] text-red-700 font-semibold text-center leading-tight">FREE DELIVERY</p>
                 <p className="text-[14px] sm:text-[20px] md:text-[28px] lg::text-[48px] xl:text-[45px] text-red-400 font-medium text-center">ON <span className="text-red-700">PKR 10,000</span> OR ABOVE</p>
               </div>
             </section>
@@ -84,7 +84,7 @@ const Home = () => {
       <section className="py-16 lg:pb-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-center mb-12">
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">Featured <span className="text-red-600">Products</span></h2>
+            <h2 className="text-3xl lg:text-4xl font-semibold text-gray-900 mb-4">Featured <span className="text-red-600">Products</span></h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">Handpicked items that represent the best of our collection.</p>
           </motion.div>
 
@@ -127,7 +127,7 @@ const Home = () => {
                             </div>
                             <h3 className="font-semibold text-gray-900 mb-2 text-sm sm:text-base line-clamp-1">{product.name}</h3>
                             <div className="flex items-center space-x-2">
-                              <span className="text-base sm:text-lg font-bold text-gray-900">${discountedPrice}</span>
+                              <span className="text-base sm:text-lg font-semibold text-gray-900">${discountedPrice}</span>
                               {product.sale > 0 && (
                                 <span className="text-xs sm:text-sm text-gray-500 line-through">${product.price.toFixed(2)}</span>
                               )}
@@ -140,7 +140,7 @@ const Home = () => {
                 })}
               </div>
               <div className="w-full flex">
-                <button onClick={() => navigate('/productlist/all')} className="mx-auto mt-[55px] shop-now relative overflow-hidden px-8 py-2 border-2 border-white text-white text-lg font-bold rounded-[35px] bg-red-700 shadow-md hover:bg-red-800 hover:text-white hover:shadow-lg active:scale-90 transition-transform duration-300">Shop now</button>
+                <button onClick={() => navigate('/productlist/all')} className="mx-auto mt-[55px] shop-now relative overflow-hidden px-8 py-2 border-2 border-white text-white text-lg font-semibold rounded-[35px] bg-red-700 shadow-md hover:bg-red-800 hover:text-white hover:shadow-lg active:scale-90 transition-transform duration-300">Shop now</button>
               </div>
             </>
           )}
@@ -150,7 +150,7 @@ const Home = () => {
       <Services />
 
       <section>
-        <h2 className="text-2xl md:text-4xl font-bold mb-8 text-red-600 text-center">What Our Clients Say</h2>
+        <h2 className="text-2xl md:text-4xl font-semibold mb-8 text-red-600 text-center">What Our Clients Say</h2>
         <Reviews />
       </section>
       <Contact />

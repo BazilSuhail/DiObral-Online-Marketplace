@@ -2,12 +2,12 @@ import React from 'react';
 import { motion } from "motion/react";
 
 const SkeletonLoader = ({ className }) => (
-    <div className={`bg-gray-200 rounded animate-pulse ${className}`} />
+    <div className={`soft-skeleton ${className}`} />
 );
 
 const ProfileSkeleton = () => {
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="soft-page">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12 relative">
                 {/* Page Header */}
                 <motion.div
@@ -29,21 +29,21 @@ const ProfileSkeleton = () => {
                         className="lg:col-span-1"
                     >
                         {/* User Info Card */}
-                        <div className="bg-white p-6 rounded-xl shadow-md">
+                        <div className="soft-card rounded-3xl p-6">
                             <div className="text-center mb-6">
                                 <SkeletonLoader className="h-6 w-32 mx-auto mb-2" />
                                 <SkeletonLoader className="h-4 w-24 mx-auto" />
                             </div>
                             <div className="space-y-3">
-                                <SkeletonLoader className="h-10 w-full rounded-lg" />
-                                <SkeletonLoader className="h-10 w-full rounded-lg" />
-                                <SkeletonLoader className="h-10 w-full rounded-lg" />
-                                <SkeletonLoader className="h-10 w-full rounded-lg" />
+                                <SkeletonLoader className="h-10 w-full rounded-2xl" />
+                                <SkeletonLoader className="h-10 w-full rounded-2xl" />
+                                <SkeletonLoader className="h-10 w-full rounded-2xl" />
+                                <SkeletonLoader className="h-10 w-full rounded-2xl" />
                             </div>
                         </div>
 
                         {/* Stats Card */}
-                        <div className="bg-white p-6 rounded-xl shadow-md mt-6">
+                        <div className="soft-card rounded-3xl p-6 mt-6">
                             <SkeletonLoader className="h-6 w-36 mb-4" />
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center">
@@ -69,10 +69,10 @@ const ProfileSkeleton = () => {
                         transition={{ duration: 0.5, delay: 0.2 }}
                         className="lg:col-span-3"
                     >
-                        <div className="bg-white p-8 rounded-xl shadow-md">
+                        <div className="soft-card rounded-3xl p-8">
                             <div className="flex items-center justify-between mb-8">
                                 <SkeletonLoader className="h-6 w-48" />
-                                <SkeletonLoader className="h-10 w-28 rounded-lg" />
+                                <SkeletonLoader className="h-10 w-28 rounded-2xl" />
                             </div>
 
                             <div className="grid md:grid-cols-2 gap-6">
@@ -81,9 +81,9 @@ const ProfileSkeleton = () => {
                                     <div>
                                         <SkeletonLoader className="h-6 w-36 mb-4" />
                                         <div className="space-y-4">
-                                            <SkeletonLoader className="h-10 w-full rounded-lg" />
-                                            <SkeletonLoader className="h-10 w-full rounded-lg" />
-                                            <SkeletonLoader className="h-10 w-full rounded-lg" />
+                                            <SkeletonLoader className="h-10 w-full rounded-2xl" />
+                                            <SkeletonLoader className="h-10 w-full rounded-2xl" />
+                                            <SkeletonLoader className="h-10 w-full rounded-2xl" />
                                         </div>
                                     </div>
                                 </div>
@@ -93,37 +93,37 @@ const ProfileSkeleton = () => {
                                     <div>
                                         <SkeletonLoader className="h-6 w-36 mb-4" />
                                         <div className="space-y-4">
-                                            <SkeletonLoader className="h-10 w-full rounded-lg" />
+                                            <SkeletonLoader className="h-10 w-full rounded-2xl" />
                                             <div className="grid grid-cols-2 gap-4">
-                                                <SkeletonLoader className="h-10 w-full rounded-lg" />
-                                                <SkeletonLoader className="h-10 w-full rounded-lg" />
+                                                <SkeletonLoader className="h-10 w-full rounded-2xl" />
+                                                <SkeletonLoader className="h-10 w-full rounded-2xl" />
                                             </div>
-                                            <SkeletonLoader className="h-10 w-full rounded-lg" />
+                                            <SkeletonLoader className="h-10 w-full rounded-2xl" />
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Contact Information */}
-                            <div className="mt-12 pt-8 border-t-[3px] border-gray-200">
+                            <div className="mt-12 pt-8 border-t border-gray-200/70">
                                 <SkeletonLoader className="h-6 w-36 mb-3" />
                                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-xl">
-                                        <SkeletonLoader className="h-10 w-10 rounded-lg" />
+                                    <div className="flex items-center space-x-3 p-4 soft-card-inset rounded-2xl">
+                                        <SkeletonLoader className="h-10 w-10 rounded-2xl" />
                                         <div className="space-y-2">
                                             <SkeletonLoader className="h-4 w-16" />
                                             <SkeletonLoader className="h-4 w-32" />
                                         </div>
                                     </div>
-                                    <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-xl">
-                                        <SkeletonLoader className="h-10 w-10 rounded-lg" />
+                                    <div className="flex items-center space-x-3 p-4 soft-card-inset rounded-2xl">
+                                        <SkeletonLoader className="h-10 w-10 rounded-2xl" />
                                         <div className="space-y-2">
                                             <SkeletonLoader className="h-4 w-16" />
                                             <SkeletonLoader className="h-4 w-24" />
                                         </div>
                                     </div>
-                                    <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-xl">
-                                        <SkeletonLoader className="h-10 w-10 rounded-lg" />
+                                    <div className="flex items-center space-x-3 p-4 soft-card-inset rounded-2xl">
+                                        <SkeletonLoader className="h-10 w-10 rounded-2xl" />
                                         <div className="space-y-2">
                                             <SkeletonLoader className="h-4 w-16" />
                                             <SkeletonLoader className="h-4 w-36" />

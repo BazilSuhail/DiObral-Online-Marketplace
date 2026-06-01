@@ -50,7 +50,7 @@ const Reveal = ({
     <div className="max-w-[1024px] mx-auto px-4 lg:py-32 relative">
       <div
         ref={containerRef}
-        className="relative mx-auto text-[22px] lg:text-[37px] font-semibold leading-relaxed"
+        className="relative mx-auto text-[20px] lg:text-[34px] font-semibold leading-relaxed"
       >
         <div className="absolute inset-0 flex flex-wrap justify-center text-gray-400 opacity-40 pointer-events-none select-none">
           {words.map((word, i) => (
@@ -65,8 +65,11 @@ const Reveal = ({
             const start = (i / words.length) * SCROLL_END;
             const end = ((i + 1) / words.length) * SCROLL_END;
 
+            // oxlint-disable-next-line react-hooks/rules-of-hooks -- words is static
             const opacity = useTransform(scrollYProgress, [start, end], [0, 1]);
+            // oxlint-disable-next-line react-hooks/rules-of-hooks -- words is static
             const x = useTransform(scrollYProgress, [start, end], [-4, 0]);
+            // oxlint-disable-next-line react-hooks/rules-of-hooks -- words is static
             const scale = useTransform(scrollYProgress, [start, end], [0.8, 1]);
 
             return (
@@ -137,10 +140,10 @@ const Reveal = ({
                 </div>
               </div>
 
-              <p className="text-3xl lg:text-4xl font-extrabold text-red-700 mb-1">
+              <p className="text-3xl lg:text-4xl font-semibold text-red-700 mb-1">
                 <CountUp end={stat.value} suffix={stat.suffix} duration={2500} />
               </p>
-              <p className="text-gray-500 text-sm leading-tight">{stat.label}</p>
+              <p className="text-gray-500 text-sm leading-snug">{stat.label}</p>
             </div>
           </motion.div>
         ))}

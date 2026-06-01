@@ -10,7 +10,7 @@ export default function Button ({ children, variant = "primary", size = "md", cl
         green: "bg-green-800 text-white hover:bg-green-800 focus:ring-gray-500",
         blue: "bg-blue-600 text-white hover:bg-blue-800 focus:ring-gray-500",
         outline: "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:ring-gray-500",
-        secondary: "bg-gray-100 text-gray-900 hover:bg-gray-200 focus:ring-gray-500", 
+        secondary: "bg-gray-100 text-gray-900 hover:bg-gray-200 focus:ring-gray-500",
     }
 
     const sizes = {
@@ -19,7 +19,17 @@ export default function Button ({ children, variant = "primary", size = "md", cl
         lg: "px-6 py-3 text-base rounded-lg",
     }
 
-    const classes = `${baseClasses} ${variants[variant]} ${sizes[size]} ${className}`
+    // Soft UI variants (opt-in; see UI_SOFT_GUIDE.md). Styling comes from index.css.
+    const softVariants = {
+        soft: "soft-btn-primary",
+        softSecondary: "soft-btn-secondary",
+        softGhost: "soft-btn-ghost",
+    }
+    const softSizes = { sm: "soft-btn-sm", md: "", lg: "soft-btn-lg" }
+
+    const classes = softVariants[variant]
+        ? `soft-btn ${softVariants[variant]} ${softSizes[size] ?? ""} ${className}`
+        : `${baseClasses} ${variants[variant]} ${sizes[size]} ${className}`
 
     if (asChild && children?.type === Link) {
         return (

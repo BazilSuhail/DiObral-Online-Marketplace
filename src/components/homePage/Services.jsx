@@ -164,7 +164,7 @@ const ServiceCard = ({ service, index }) => {
           </div>
 
           <div className="flex-1 min-w-0">
-            <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-red-700 transition-colors duration-300">{service.title}</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-red-700 transition-colors duration-300">{service.title}</h3>
             <p className="text-gray-500 text-sm leading-relaxed group-hover:text-gray-600 transition-colors duration-300">{service.description}</p>
           </div>
         </div>
@@ -194,7 +194,7 @@ const Services = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-3xl lg:text-5xl font-bold text-gray-900 mb-4">
+          <h2 className="text-3xl lg:text-5xl font-semibold text-gray-900 mb-4">
             What We <span className="text-red-600">Offer</span>
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">

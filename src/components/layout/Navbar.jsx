@@ -94,7 +94,7 @@ export default function Navbar() {
               <NavLink to="/" className="h-[55px] pt-[5px] flex items-center justify-center w-full pb-[5px] overflow-hidden">
                 <img src="/diobral.webp" alt="DiObral" className="w-[35px] h-[35px]" />
                 <div className="flex flex-col">
-                  <div className="text-red-700 ml-[4px] text-[20px] font-bold">DiObral</div>
+                  <div className="text-red-700 ml-[4px] text-[20px] font-semibold">DiObral</div>
                 </div>
               </NavLink>
             </motion.div>
@@ -132,17 +132,17 @@ export default function Navbar() {
                           className="absolute left-[-125px] mt-5 w-[350px] rounded-lg bg-white shadow-md border-[2px] border-gray-200 z-[999]"
                         >
                           <div className="p-3">
-                            <h3 className="text-[12px] font-semibold text-gray-500 uppercase tracking-wider mb-3 px-3">Browse Categories</h3>
+                            <h3 className="text-[12px] font-semibold text-gray-500 uppercase tracking-wide mb-3 px-3">Browse Categories</h3>
                             <div className="grid grid-cols-2 gap-1">
                               {categories.map((category) => {
                                 const IconComponent = category.icon
                                 return (
                                   <NavLink key={category.name} to={category.href}>
                                     <motion.div
-                                      className="flex items-center px-3 py-2 hover:bg-red-50 text-sm text-gray-700 rounded-md hover:text-red-600 transition-colors duration-150"
+                                      className="flex items-center px-3 py-2 hover:bg-red-50 text-[13px] text-gray-700 rounded-md hover:text-red-600 transition-colors duration-150"
                                     >
                                       <IconComponent className="mr-2 p-[6px] text-[32px] text-red-700 bg-red-50 rounded-[6px]" />
-                                      <span className="font-[600]">{category.name}</span>
+                                      <span className="font-semibold whitespace-nowrap">{category.name}</span>
                                     </motion.div>
                                   </NavLink>
                                 )
@@ -229,6 +229,7 @@ export default function Navbar() {
                 {isAuthenticated && (
                   <motion.button
                     onClick={openCartModal}
+                    data-cart-target
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     initial={{ opacity: 0, x: 20 }}
@@ -246,7 +247,7 @@ export default function Navbar() {
                           animate={{ scale: 1, opacity: 1 }}
                           exit={{ scale: 0, opacity: 0 }}
                           key={cartLength}
-                          className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center"
+                          className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-semibold rounded-full w-6 h-6 flex items-center justify-center"
                         >
                           <motion.span
                             initial={{ scale: 1.5 }}
@@ -284,7 +285,7 @@ export default function Navbar() {
               <div className="flex items-center">
                 <img src="/diobral.webp" alt="DiObral" className="w-[35px] h-[35px]" />
                 <div className="flex">
-                  <div className="text-red-700 ml-[6px] text-[21px] font-bold">Diobral</div>
+                  <div className="text-red-700 ml-[6px] text-[21px] font-semibold">Diobral</div>
                 </div>
               </div>
             </NavLink>
@@ -292,6 +293,7 @@ export default function Navbar() {
               {isAuthenticated &&
                 <button
                   onClick={openCartModal}
+                  data-cart-target
                   className="relative bg-gradient-to-r from-red-700 via-red-900 to-red-700 text-white p-2 mr-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
                 >
                   <AiOutlineShoppingCart className="w-5 h-5" />
@@ -302,7 +304,7 @@ export default function Navbar() {
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0, opacity: 0 }}
                         key={cartLength}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center"
+                        className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-semibold rounded-full w-6 h-6 flex items-center justify-center"
                       >
                         <motion.span initial={{ scale: 1.5 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 500, damping: 25 }}>{cartLength}</motion.span>
                       </motion.div>
@@ -352,18 +354,18 @@ export default function Navbar() {
                   
                   <div className="flex flex-col mt-6 space-y-4">
                     <div className="flex justify-between items-center gap-2 px-2">
-                      <NavLink to="/productlist/all" onClick={handleMenuToggle} className="flex items-center text-red-700 text-[15px] font-[600] hover:text-red-800">
+                      <NavLink to="/productlist/all" onClick={handleMenuToggle} className="flex items-center text-red-700 text-[14px] font-semibold hover:text-red-800">
                         <FiList className="mr-2" />Catalog
                       </NavLink>
-                      <NavLink to="/about" onClick={handleMenuToggle} className="flex items-center text-red-700 text-[15px] font-[600] hover:text-red-800">
+                      <NavLink to="/about" onClick={handleMenuToggle} className="flex items-center text-red-700 text-[14px] font-semibold hover:text-red-800">
                         <FiInfo className="mr-2" />About
                       </NavLink>
-                      <NavLink to="/bundles" onClick={handleMenuToggle} className="flex items-center text-red-700 text-[15px] font-[600] hover:text-red-800">
+                      <NavLink to="/bundles" onClick={handleMenuToggle} className="flex items-center text-red-700 text-[14px] font-semibold hover:text-red-800">
                         <FiPercent className="mr-2" />Bundles
                       </NavLink>
                     </div>
                     <div className="pt-5 border-t-[2px] border-gray-200">
-                      <h3 className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-3 px-3">Browse Categories</h3>
+                      <h3 className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-3 px-3">Browse Categories</h3>
                       <div className="grid grid-cols-2 gap-1">
                         {categories.map((category) => {
                           const IconComponent = category.icon
@@ -373,10 +375,10 @@ export default function Navbar() {
                                 whileHover={{ backgroundColor: "rgba(59, 130, 246, 0.1)", scale: 1.02 }}
                                 whileTap={{ scale: 0.97 }}
                                 onClick={handleMenuToggle}
-                                className="flex items-center px-3 py-2 text-sm text-gray-700 rounded-md hover:text-red-600 transition-colors duration-150 w-full"
+                                className="flex items-center px-3 py-2 text-[13px] text-gray-700 rounded-md hover:text-red-600 transition-colors duration-150 w-full"
                               >
                                 <IconComponent className="mr-2 p-[6px] text-[28px] text-red-700 bg-red-50 rounded-[6px]" />
-                                <span className="font-[600]">{category.name}</span>
+                                <span className="font-semibold whitespace-nowrap">{category.name}</span>
                               </motion.button>
                             </NavLink>
                           )

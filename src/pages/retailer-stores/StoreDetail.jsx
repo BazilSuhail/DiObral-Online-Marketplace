@@ -1,33 +1,22 @@
 import { useState, useEffect, useCallback } from "react"
-import { motion } from "motion/react"
+import { motion, useReducedMotion, AnimatePresence } from "motion/react"
 import {
   FiStar, FiPackage, FiUsers, FiMessageSquare, FiHeart,
-  FiChevronRight, FiTag, FiClock, FiPercent,
+  FiChevronRight, FiTag, FiClock, FiPercent, FiCheckCircle, FiUser,
+  FiUserPlus, FiUserCheck, FiLayers, FiGrid, FiArrowLeft, FiCalendar,
+  FiShoppingBag, FiGift, FiInfo,
 } from "react-icons/fi"
 import { Link, useParams, useNavigate } from "react-router-dom"
 import { useAuthStore } from "../../store/authStore"
 import { useApiQuery } from "../../api/adapter"
 import { get, post } from "../../api/client"
 import { API_BASE_URL } from "../../api/client"
+import { NotFound, NoProducts, NoReviews } from "../../components/illustrations"
 
 function buildImageUrl(image) {
   if (!image) return "/placeholder.png"
   if (image.startsWith("http")) return image
   return `${API_BASE_URL}/uploads/${image}`
-}
-
-const gradientColors = [
-  "from-red-600 to-red-700",
-  "from-red-500 to-red-600",
-  "from-rose-600 to-red-600",
-  "from-red-700 to-rose-800",
-  "from-rose-500 to-red-500",
-  "from-red-600 to-pink-700",
-]
-
-function getGradient(id) {
-  const num = id?.charCodeAt?.(0) || 0
-  return gradientColors[num % gradientColors.length]
 }
 
 function formatDate(dateStr) {
@@ -43,23 +32,29 @@ function StoreReviewCard({ review }) {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm"
+      className="soft-card rounded-3xl p-5"
     >
       <div className="flex items-start gap-3">
-        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
+        <div className="w-10 h-10 rounded-2xl bg-red-50 ring-1 ring-red-100 flex items-center justify-center text-sm font-semibold text-red-600 flex-shrink-0">
           {initial}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-semibold text-gray-800 text-sm">{name}</span>
-            <span className="text-xs text-gray-400 ml-auto">{formatDate(review.createdAt)}</span>
+            <span className="font-semibold text-gray-900 text-sm flex items-center gap-1.5">
+              <FiUser className="w-3 h-3 text-gray-400" />
+              {name}
+            </span>
+            <span className="text-xs text-gray-400 ml-auto flex items-center gap-1">
+              <FiCalendar className="w-3 h-3" />
+              {formatDate(review.createdAt)}
+            </span>
           </div>
-          <div className="flex items-center gap-0.5 mt-0.5">
+          <div className="flex items-center gap-0.5 mt-1">
             {[...Array(5)].map((_, i) => (
-              <FiStar key={i} className={`w-3 h-3 ${i < review.rating ? "text-red-500 fill-current" : "text-gray-200 fill-current"}`} />
+              <FiStar key={i} className={`w-3.5 h-3.5 ${i < review.rating ? "text-red-500 fill-current" : "text-gray-200 fill-current"}`} />
             ))}
           </div>
-          {review.comment && <p className="text-gray-500 text-sm mt-1.5">{review.comment}</p>}
+          {review.comment && <p className="text-gray-600 text-sm mt-2 leading-relaxed">{review.comment}</p>}
         </div>
       </div>
     </motion.div>
@@ -69,28 +64,41 @@ function StoreReviewCard({ review }) {
 function BundleCard({ bundle }) {
   return (
     <motion.div
-      whileHover={{ y: -3 }}
-      className="bg-gradient-to-br from-red-50 to-white border border-red-200 rounded-xl p-4 shadow-sm"
+      whileHover={{ y: -4 }}
+      className="soft-card soft-card-hover rounded-3xl p-5"
     >
       <div className="flex items-start gap-3">
-        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-red-600 to-red-700 flex items-center justify-center flex-shrink-0 shadow-sm">
-          <FiPercent className="w-4 h-4 text-white" />
-        </div>
+        <span className="soft-icon-tile flex-shrink-0">
+          <FiGift className="w-5 h-5" />
+        </span>
         <div className="flex-1 min-w-0">
-          <p className="font-bold text-gray-900 text-sm">{bundle.name}</p>
-          <div className="flex items-center gap-2 mt-1">
-            <span className="text-sm font-bold text-red-600">${bundle.price?.toFixed(2)}</span>
+          <p className="font-semibold text-gray-900 text-sm">{bundle.name}</p>
+          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+            <span className="text-base font-semibold text-red-600">${bundle.price?.toFixed(2)}</span>
             <span className="text-xs text-gray-400 line-through">${bundle.originalTotal?.toFixed(2)}</span>
             {bundle.youSavePercent > 0 && (
-              <span className="text-[10px] font-bold text-green-700 bg-green-50 border border-green-200 px-1.5 py-0.5 rounded">
+              <span className="soft-badge soft-badge-success">
+                <FiPercent className="h-3 w-3" />
                 Save {bundle.youSavePercent}%
               </span>
             )}
           </div>
-          <p className="text-xs text-gray-500 mt-1">{bundle.items?.length || 0} items</p>
+          <p className="text-xs text-gray-500 mt-2 flex items-center gap-1.5">
+            <FiLayers className="w-3.5 h-3.5 text-gray-400" />
+            {bundle.items?.length || 0} items
+          </p>
         </div>
       </div>
     </motion.div>
+  )
+}
+
+function SectionTitle({ icon: Icon, children }) {
+  return (
+    <h2 className="soft-section-title text-lg font-semibold text-gray-900">
+      <span className="soft-icon-tile soft-icon-tile-sm"><Icon className="w-4 h-4" /></span>
+      {children}
+    </h2>
   )
 }
 
@@ -98,6 +106,7 @@ export default function StoreDetail() {
   const { slug } = useParams()
   const navigate = useNavigate()
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+  const reduce = useReducedMotion()
 
   const [following, setFollowing] = useState(false)
   const [reviewPage, setReviewPage] = useState(1)
@@ -145,19 +154,19 @@ export default function StoreDetail() {
 
   if (isLoading) {
     return (
-      <main className="min-h-screen bg-white">
+      <main className="soft-page">
         <div className="max-w-7xl mx-auto px-4 py-10">
-          <div className="animate-pulse space-y-6">
-            <div className="h-48 bg-gray-100 rounded-2xl" />
+          <div className="space-y-6">
+            <div className="soft-skeleton h-48 rounded-3xl" />
             <div className="flex gap-4">
-              <div className="w-20 h-20 rounded-xl bg-gray-200" />
+              <div className="soft-skeleton w-20 h-20 rounded-3xl" />
               <div className="flex-1 space-y-2">
-                <div className="h-6 bg-gray-200 rounded w-48" />
-                <div className="h-4 bg-gray-100 rounded w-32" />
+                <div className="soft-skeleton h-6 w-48" />
+                <div className="soft-skeleton h-4 w-32" />
               </div>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[...Array(4)].map((_, i) => <div key={i} className="h-40 bg-gray-100 rounded-xl" />)}
+              {[...Array(4)].map((_, i) => <div key={i} className="soft-skeleton h-40 rounded-3xl" />)}
             </div>
           </div>
         </div>
@@ -165,17 +174,40 @@ export default function StoreDetail() {
     )
   }
 
-  if (!store) return null
+  if (!store) {
+    return (
+      <main className="soft-page">
+        <div className="max-w-7xl mx-auto px-4 py-16">
+          <div className="soft-card rounded-3xl mx-auto max-w-lg px-6 py-12 flex flex-col items-center text-center">
+            <NotFound size={200} className="mb-6" />
+            <h1 className="text-xl font-semibold text-gray-900">Store not found</h1>
+            <p className="mt-2 text-sm text-gray-500">This store may have moved or no longer exists.</p>
+            <Link to="/stores" className="soft-btn soft-btn-primary mt-6">
+              <FiArrowLeft className="h-4 w-4" />
+              Back to stores
+            </Link>
+          </div>
+        </div>
+      </main>
+    )
+  }
 
   const initial = store.storeName?.charAt(0)?.toUpperCase() || "S"
 
+  const statTiles = [
+    { icon: FiStar, label: "Rating", value: stats.rating?.toFixed(1) || "0.0", sub: `${stats.ratingCount || 0} ratings` },
+    { icon: FiPackage, label: "Products", value: stats.productCount || 0 },
+    { icon: FiUsers, label: "Followers", value: stats.followerCount || 0 },
+    { icon: FiMessageSquare, label: "Reviews", value: stats.ratingCount || 0 },
+  ]
+
   return (
-    <main className="min-h-screen ">
+    <main className="soft-page">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10">
 
         {/* Breadcrumb */}
         <motion.nav
-          initial={{ opacity: 0, x: -10 }}
+          initial={reduce ? false : { opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
           className="flex items-center gap-2 text-sm text-gray-400 mb-6"
         >
@@ -188,69 +220,83 @@ export default function StoreDetail() {
 
         {/* Store Hero */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={reduce ? false : { opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 mb-8"
+          className="soft-card relative rounded-3xl overflow-hidden mb-8"
         >
-          <div className="absolute inset-0 bg-gradient-to-t from-white/80 via-transparent to-transparent" />
-          <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-gradient-to-br from-red-100/50 to-red-200/30" />
-          <div className="absolute -bottom-6 -left-6 w-32 h-32 rounded-full bg-gradient-to-br from-red-50/50 to-red-100/30" />
+          <div className="absolute -top-12 -right-12 w-44 h-44 rounded-full bg-gray-100" />
+          <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full bg-gray-100/70" />
 
           <div className="relative p-6 sm:p-8">
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
               <motion.div
-                whileHover={{ scale: 1.05 }}
-                className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${getGradient(store._id)} shadow-xl shadow-red-600/20 flex items-center justify-center text-3xl font-bold text-white border-2 border-white flex-shrink-0`}
+                whileHover={reduce ? undefined : { scale: 1.05, rotate: -2 }}
+                className="w-24 h-24 rounded-3xl bg-red-50 text-red-600 ring-1 ring-red-100 shadow-soft-red flex items-center justify-center text-4xl font-semibold flex-shrink-0"
               >
                 {initial}
               </motion.div>
 
               <div className="flex-1 min-w-0">
-                <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">{store.storeName}</h1>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h1 className="text-2xl lg:text-3xl font-semibold text-gray-900">{store.storeName}</h1>
+                  <span className="soft-badge soft-badge-success">
+                    <FiCheckCircle className="h-3 w-3" />
+                    Verified
+                  </span>
+                </div>
                 {store.ownedBy?.fullName && (
-                  <p className="text-sm text-gray-500 mt-0.5">Owned by {store.ownedBy.fullName}</p>
+                  <p className="text-sm text-gray-500 mt-1 flex items-center gap-1.5">
+                    <FiUser className="w-3.5 h-3.5 text-gray-400" />
+                    Owned by {store.ownedBy.fullName}
+                  </p>
                 )}
                 {store.description && (
-                  <p className="text-gray-500 text-sm mt-2 max-w-2xl leading-relaxed">{store.description}</p>
+                  <p className="text-gray-600 text-sm mt-2 max-w-2xl leading-relaxed">{store.description}</p>
                 )}
 
                 {/* Stats row */}
-                <div className="flex flex-wrap items-center gap-4 sm:gap-6 mt-4">
-                  <div className="flex items-center gap-1.5">
-                    <FiStar className="w-4 h-4 text-red-500 fill-current" />
-                    <span className="font-bold text-gray-900">{stats.rating?.toFixed(1) || "0.0"}</span>
-                    <span className="text-xs text-gray-400">({stats.ratingCount || 0})</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <FiPackage className="w-4 h-4 text-red-400" />
-                    <span className="font-semibold text-gray-700">{stats.productCount || 0}</span>
-                    <span className="text-xs text-gray-400">products</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <FiUsers className="w-4 h-4 text-red-400" />
-                    <span className="font-semibold text-gray-700">{stats.followerCount || 0}</span>
-                    <span className="text-xs text-gray-400">followers</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <FiMessageSquare className="w-4 h-4 text-red-400" />
-                    <span className="font-semibold text-gray-700">{stats.ratingCount || 0}</span>
-                    <span className="text-xs text-gray-400">reviews</span>
-                  </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5">
+                  {statTiles.map((t, i) => (
+                    <motion.div
+                      key={t.label}
+                      initial={reduce ? false : { opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 + i * 0.06 }}
+                      whileHover={reduce ? undefined : { y: -2 }}
+                      className="soft-card-inset rounded-2xl px-3 py-2.5 flex items-center gap-2.5"
+                    >
+                      <span className="soft-icon-tile soft-icon-tile-sm flex-shrink-0">
+                        <t.icon className="w-4 h-4" />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-base font-semibold text-gray-900 leading-snug">{t.value}</p>
+                        <p className="text-[11px] font-medium text-gray-500 truncate">{t.label}</p>
+                      </div>
+                    </motion.div>
+                  ))}
                 </div>
               </div>
 
               <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
+                whileHover={reduce ? undefined : { scale: 1.03 }}
+                whileTap={reduce ? undefined : { scale: 0.96 }}
                 onClick={toggleFollow}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-sm flex-shrink-0 ${
-                  following
-                    ? "bg-red-50 text-red-600 border border-red-200 hover:bg-red-100"
-                    : "bg-gradient-to-r from-red-600 to-red-700 text-white hover:from-red-700 hover:to-red-800 shadow-lg shadow-red-600/20"
-                }`}
+                className={`soft-btn flex-shrink-0 ${following ? "soft-btn-secondary" : "soft-btn-primary"}`}
               >
-                <FiHeart className={`w-4 h-4 ${following ? "fill-current" : ""}`} />
-                {following ? "Following" : "Follow Store"}
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.span
+                    key={following ? "following" : "follow"}
+                    initial={reduce ? false : { opacity: 0, scale: 0.7, rotate: -15 }}
+                    animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                    exit={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.7 }}
+                    transition={{ duration: 0.18 }}
+                    className="inline-flex items-center gap-2"
+                  >
+                    {following ? <FiUserCheck className="w-4 h-4" /> : <FiUserPlus className="w-4 h-4" />}
+                    {following ? "Following" : "Follow Store"}
+                    <FiHeart className={`w-4 h-4 ${following ? "fill-current" : ""}`} />
+                  </motion.span>
+                </AnimatePresence>
               </motion.button>
             </div>
           </div>
@@ -263,21 +309,19 @@ export default function StoreDetail() {
 
             {/* Products */}
             <motion.section
-              initial={{ opacity: 0, y: 20 }}
+              initial={reduce ? false : { opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
             >
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                  <FiPackage className="w-5 h-5 text-red-500" />
-                  Products ({products.length})
-                </h2>
+                <SectionTitle icon={FiGrid}>Products ({products.length})</SectionTitle>
               </div>
 
               {products.length === 0 ? (
-                <div className="text-center py-12 bg-white border border-gray-200 rounded-xl">
-                  <FiPackage className="w-10 h-10 text-gray-300 mx-auto mb-2" />
-                  <p className="text-gray-500 text-sm">No products yet</p>
+                <div className="soft-card rounded-3xl mx-auto px-6 py-10 flex flex-col items-center text-center">
+                  <NoProducts size={160} className="mb-4" />
+                  <p className="text-base font-semibold text-gray-900">No products yet</p>
+                  <p className="mt-1 text-sm text-gray-500">This store hasn't listed anything. Check back soon.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -289,30 +333,31 @@ export default function StoreDetail() {
                     return (
                       <Link key={p._id} to={`/products/${p._id}`}>
                         <motion.div
-                          initial={{ opacity: 0, y: 10 }}
+                          initial={reduce ? false : { opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: i * 0.03 }}
-                          whileHover={{ y: -4 }}
-                          className="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-all"
+                          transition={{ delay: i * 0.04 }}
+                          whileHover={reduce ? undefined : { y: -4 }}
+                          className="group soft-card soft-card-hover rounded-3xl overflow-hidden"
                         >
-                          <div className="relative overflow-hidden bg-gray-50 h-36 sm:h-40">
+                          <div className="relative overflow-hidden bg-gray-100 h-36 sm:h-40">
                             <img src={buildImageUrl(p.image)} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                             {pHasSale && (
-                              <div className="absolute top-2 left-2 bg-gradient-to-r from-red-600 to-red-700 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm">
+                              <span className="soft-badge soft-badge-sale absolute top-2.5 left-2.5">
+                                <FiPercent className="h-3 w-3" />
                                 Sale
-                              </div>
+                              </span>
                             )}
                           </div>
-                          <div className="p-3">
-                            <p className="text-sm font-semibold text-gray-800 truncate">{p.name}</p>
+                          <div className="p-3.5">
+                            <p className="text-sm font-semibold text-gray-900 truncate">{p.name}</p>
                             <div className="flex items-center gap-1.5 mt-1">
                               {pHasSale ? (
                                 <>
-                                  <span className="text-sm font-bold text-red-600">${pSale.toFixed(2)}</span>
-                                  <span className="text-xs text-gray-300 line-through">${pPrice.toFixed(2)}</span>
+                                  <span className="text-sm font-semibold text-red-600">${pSale.toFixed(2)}</span>
+                                  <span className="text-xs text-gray-400 line-through">${pPrice.toFixed(2)}</span>
                                 </>
                               ) : (
-                                <span className="text-sm font-bold text-gray-900">${pPrice.toFixed(2)}</span>
+                                <span className="text-sm font-semibold text-gray-900">${pPrice.toFixed(2)}</span>
                               )}
                             </div>
                             <div className="flex items-center gap-1 mt-1.5">
@@ -335,14 +380,13 @@ export default function StoreDetail() {
             {/* Bundles */}
             {bundles?.length > 0 && (
               <motion.section
-                initial={{ opacity: 0, y: 20 }}
+                initial={reduce ? false : { opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
               >
-                <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <FiPercent className="w-5 h-5 text-red-500" />
-                  Bundles & Deals
-                </h2>
+                <div className="mb-4">
+                  <SectionTitle icon={FiLayers}>Bundles & Deals</SectionTitle>
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {bundles.map((b) => (
                     <BundleCard key={b._id} bundle={b} />
@@ -353,34 +397,43 @@ export default function StoreDetail() {
 
             {/* Store Reviews */}
             <motion.section
-              initial={{ opacity: 0, y: 20 }}
+              initial={reduce ? false : { opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
-              <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <FiMessageSquare className="w-5 h-5 text-red-500" />
-                Store Reviews
-                {reviewStats.totalReviews > 0 && (
-                  <span className="text-sm font-normal text-gray-400">({reviewStats.totalReviews})</span>
-                )}
-              </h2>
+              <div className="mb-4">
+                <SectionTitle icon={FiMessageSquare}>
+                  Store Reviews
+                  {reviewStats.totalReviews > 0 && (
+                    <span className="text-sm font-normal text-gray-400">({reviewStats.totalReviews})</span>
+                  )}
+                </SectionTitle>
+              </div>
 
               {reviewStats.averageRating > 0 && (
-                <div className="flex items-center gap-3 mb-4 bg-white border border-gray-200 rounded-xl px-4 py-3">
-                  <span className="text-2xl font-bold text-red-700">{reviewStats.averageRating?.toFixed(1)}</span>
-                  <div className="flex items-center gap-0.5">
-                    {[...Array(5)].map((_, i) => (
-                      <FiStar key={i} className={`w-4 h-4 ${i < Math.round(reviewStats.averageRating) ? "text-red-500 fill-current" : "text-gray-200 fill-current"}`} />
-                    ))}
+                <div className="soft-card rounded-3xl flex items-center gap-4 mb-4 px-5 py-4">
+                  <span className="soft-icon-tile soft-icon-tile-lg flex-shrink-0 text-2xl font-semibold text-red-700">
+                    {reviewStats.averageRating?.toFixed(1)}
+                  </span>
+                  <div>
+                    <div className="flex items-center gap-0.5">
+                      {[...Array(5)].map((_, i) => (
+                        <FiStar key={i} className={`w-4 h-4 ${i < Math.round(reviewStats.averageRating) ? "text-red-500 fill-current" : "text-gray-200 fill-current"}`} />
+                      ))}
+                    </div>
+                    <span className="text-sm text-gray-500 mt-1 flex items-center gap-1.5">
+                      <FiMessageSquare className="w-3.5 h-3.5 text-gray-400" />
+                      {reviewStats.totalReviews} reviews
+                    </span>
                   </div>
-                  <span className="text-sm text-gray-400">{reviewStats.totalReviews} reviews</span>
                 </div>
               )}
 
               {storeReviews.length === 0 ? (
-                <div className="text-center py-10 bg-white border border-gray-200 rounded-xl">
-                  <FiMessageSquare className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-                  <p className="text-gray-500 text-sm">No reviews yet</p>
+                <div className="soft-card rounded-3xl mx-auto px-6 py-10 flex flex-col items-center text-center">
+                  <NoReviews size={160} className="mb-4" />
+                  <p className="text-base font-semibold text-gray-900">No reviews yet</p>
+                  <p className="mt-1 text-sm text-gray-500">Be the first to share your experience with this store.</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -392,14 +445,10 @@ export default function StoreDetail() {
                       {Array.from({ length: reviewPagination.totalPages }, (_, i) => i + 1).map((p) => (
                         <motion.button
                           key={p}
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
+                          whileHover={reduce ? undefined : { scale: 1.05 }}
+                          whileTap={reduce ? undefined : { scale: 0.95 }}
                           onClick={() => setReviewPage(p)}
-                          className={`w-8 h-8 text-xs font-medium rounded-lg transition-all ${
-                            reviewPage === p
-                              ? "bg-red-600 text-white shadow-sm"
-                              : "bg-white text-gray-600 border border-gray-200 hover:border-red-300 hover:text-red-600"
-                          }`}
+                          className={`soft-chip ${reviewPage === p ? "soft-chip-active" : ""}`}
                         >
                           {p}
                         </motion.button>
@@ -417,13 +466,13 @@ export default function StoreDetail() {
             {/* Categories */}
             {categories.length > 0 && (
               <motion.div
-                initial={{ opacity: 0, x: 20 }}
+                initial={reduce ? false : { opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.15 }}
-                className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm"
+                className="soft-card rounded-3xl p-5"
               >
-                <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
-                  <FiTag className="w-4 h-4 text-red-500" />
+                <h3 className="soft-section-title text-sm font-semibold text-gray-900 mb-4">
+                  <span className="soft-icon-tile soft-icon-tile-sm"><FiTag className="w-4 h-4" /></span>
                   Categories
                 </h3>
                 <div className="flex flex-wrap gap-2">
@@ -431,7 +480,7 @@ export default function StoreDetail() {
                     <Link
                       key={cat._id || cat.name}
                       to={`/productlist/${cat.slug || cat.name?.toLowerCase().replace(/\s+/g, "-")}`}
-                      className="inline-flex items-center gap-1.5 text-xs font-medium text-red-600 bg-red-50 border border-red-200 px-3 py-1.5 rounded-lg hover:bg-red-100 transition-colors"
+                      className="soft-chip"
                     >
                       <FiTag className="w-3 h-3" />
                       {cat.name}
@@ -443,35 +492,33 @@ export default function StoreDetail() {
 
             {/* Quick Stats Card */}
             <motion.div
-              initial={{ opacity: 0, x: 20 }}
+              initial={reduce ? false : { opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
-              className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm"
+              className="soft-card rounded-3xl p-5"
             >
-              <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
-                <FiClock className="w-4 h-4 text-red-500" />
+              <h3 className="soft-section-title text-sm font-semibold text-gray-900 mb-4">
+                <span className="soft-icon-tile soft-icon-tile-sm"><FiInfo className="w-4 h-4" /></span>
                 Store Info
               </h3>
-              <div className="space-y-2.5">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-400">Products</span>
-                  <span className="font-semibold text-gray-800">{stats.productCount || 0}</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-400">Followers</span>
-                  <span className="font-semibold text-gray-800">{stats.followerCount || 0}</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-400">Rating</span>
-                  <span className="font-semibold text-gray-800 flex items-center gap-1">
-                    <FiStar className="w-3.5 h-3.5 text-red-500 fill-current" />
-                    {stats.rating?.toFixed(1) || "0.0"}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-400">Reviews</span>
-                  <span className="font-semibold text-gray-800">{stats.ratingCount || 0}</span>
-                </div>
+              <div className="space-y-2">
+                {[
+                  { icon: FiShoppingBag, label: "Products", value: stats.productCount || 0 },
+                  { icon: FiUsers, label: "Followers", value: stats.followerCount || 0 },
+                  { icon: FiStar, label: "Rating", value: stats.rating?.toFixed(1) || "0.0", star: true },
+                  { icon: FiClock, label: "Reviews", value: stats.ratingCount || 0 },
+                ].map((row) => (
+                  <div key={row.label} className="soft-card-inset rounded-2xl flex items-center justify-between text-sm px-3 py-2.5">
+                    <span className="text-gray-500 flex items-center gap-2">
+                      <row.icon className="w-4 h-4 text-red-500" />
+                      {row.label}
+                    </span>
+                    <span className="font-semibold text-gray-900 flex items-center gap-1">
+                      {row.star && <FiStar className="w-3.5 h-3.5 text-red-500 fill-current" />}
+                      {row.value}
+                    </span>
+                  </div>
+                ))}
               </div>
             </motion.div>
           </div>

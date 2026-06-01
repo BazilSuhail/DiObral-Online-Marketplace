@@ -14,7 +14,7 @@ export default function Contact() {
   transition={{ duration: 0.6 }}
   className="space-y-6"
 >
-  <h2 className="text-4xl mt-4 font-bold text-gray-900">
+  <h2 className="text-4xl mt-4 font-semibold text-gray-900">
     Let&rsquo;s <span className="text-red-600">Talk</span>
   </h2>
   <p className="text-lg text-gray-600">

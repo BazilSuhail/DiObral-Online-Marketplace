@@ -75,11 +75,11 @@ export default function SearchModal({ isOpen, onClose }) {
                     onClick={() => handleSearch()}
                     className="w-full flex items-center p-3 text-left rounded-lg hover:bg-blue-50 transition-colors">
                     <AiOutlineSearch className="w-5 h-5 text-blue-600 mr-3" />
-                    <span className="text-gray-700">Search for "<span className="font-semibold text-blue-600">{searchQuery}</span>"</span>
+                    <span className="text-gray-700 break-words min-w-0">Search for "<span className="font-semibold text-blue-600">{searchQuery}</span>"</span>
                   </motion.button>
                   {suggestions.length > 0 && (
                     <div className="mt-2 border-t border-gray-100 pt-2">
-                      <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-3">Suggestions</h3>
+                      <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 px-3">Suggestions</h3>
                       {suggestions.map((p) => (
                         <motion.button key={p._id} whileHover={{ x: 4 }}
                           onClick={() => { navigate(`/products/${p._id}`); onClose(); setSearchQuery(""); }}
@@ -96,7 +96,7 @@ export default function SearchModal({ isOpen, onClose }) {
                   <div>
                     <div className="flex items-center mb-3">
                       <AiOutlineClockCircle className="w-4 h-4 text-gray-400 mr-2" />
-                      <h3 className="text-[14px] md:text-[16px] font-medium text-gray-500 uppercase tracking-wider">Trending Now</h3>
+                      <h3 className="text-[14px] md:text-[16px] font-medium text-gray-500 uppercase tracking-wide">Trending Now</h3>
                     </div>
                     {["Men's PowerFlex Tree", "Adidas Elite Shorts", "Endura Pants", "FlexCore Hoodie", "Xtreme Shirt"].map((search, i) => (
                       <motion.button key={i} whileHover={{ x: 4 }}

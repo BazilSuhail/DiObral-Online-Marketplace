@@ -32,7 +32,7 @@ const CircularProgress = ({ value, label }) => {
             x="45" y="47"
             textAnchor="middle"
             dominantBaseline="middle"
-            className="fill-rose-700 text-2xl font-black tracking-tight"
+            className="fill-rose-700 text-2xl font-semibold tracking-tight"
             initial={{ opacity: 0 }}
             animate={isInView ? { opacity: 1 } : {}}
             transition={{ duration: 0.6, delay: 0.8 }}
@@ -41,7 +41,7 @@ const CircularProgress = ({ value, label }) => {
           </motion.text>
         </svg>
       </div>
-      <p className="text-gray-700 mt-4 text-sm font-semibold text-center leading-tight tracking-wide">{label}</p>
+      <p className="text-gray-700 mt-4 text-sm font-semibold text-center leading-snug tracking-normal">{label}</p>
     </motion.div>
   );
 };
@@ -101,7 +101,7 @@ const GrowthGraph = () => {
               <motion.text
                 x={x} y={y - 12}
                 textAnchor="middle"
-                className="fill-white text-[12px] font-bold"
+                className="fill-white text-[12px] font-semibold"
                 initial={{ opacity: 0, y: 10 }}
                 animate={isInView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.4, delay: 0.5 + i * 0.15 }}
@@ -236,7 +236,7 @@ const Growth = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-3xl lg:text-5xl font-bold text-gray-900 mb-4">
+          <h2 className="text-3xl lg:text-5xl font-semibold text-gray-900 mb-4">
             Our <span className="text-red-600">Growth</span>
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
@@ -253,7 +253,7 @@ const Growth = () => {
           >
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h3 className="text-xl font-bold text-white tracking-wide">Annual Revenue</h3>
+                <h3 className="text-xl font-semibold text-white tracking-wide">Annual Revenue</h3>
                 <p className="text-xs text-rose-100/80 mt-0.5">Year-over-year expansion in USD</p>
               </div>
               <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-rose-900/40 border border-rose-400/30">
@@ -312,11 +312,11 @@ const Growth = () => {
                 initial={{ opacity: 0, scale: 0.5 }}
                 animate={isInView ? { opacity: 1, scale: 1 } : {}}
                 transition={{ duration: 0.4, delay: 0.8 + i * 0.15, type: "spring", stiffness: 100 }}
-                className="text-3xl lg:text-4xl font-extrabold text-rose-700 mb-1"
+                className="text-3xl lg:text-4xl font-semibold text-rose-700 mb-1"
               >
                 {stat.value}
               </motion.p>
-              <p className="text-gray-600 text-sm font-semibold">{stat.label}</p>
+              <p className="text-gray-500 text-sm font-medium">{stat.label}</p>
             </motion.div>
           ))}
         </div>
